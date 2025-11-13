@@ -1,31 +1,5 @@
 import ProductCard from "./ProductCard";
-import productSerum from "@/assets/product-serum.jpg";
-import productToner from "@/assets/product-toner.jpg";
-import productCream from "@/assets/product-cream.jpg";
-
-const products = [
-  {
-    id: 1,
-    image: productSerum,
-    name: "Dive-In Low Molecular Hyaluronic Acid Serum",
-    brand: "Torriden",
-    price: "89,000₮",
-  },
-  {
-    id: 2,
-    image: productToner,
-    name: "1025 Dokdo Toner",
-    brand: "Round Lab",
-    price: "79,000₮",
-  },
-  {
-    id: 3,
-    image: productCream,
-    name: "Ceramide Ato Concentrate Cream",
-    brand: "Illiyoon",
-    price: "69,000₮",
-  },
-];
+import { products } from "@/data/products";
 
 const BestSellers = () => {
   return (
@@ -42,7 +16,14 @@ const BestSellers = () => {
         
         <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
           {products.map((product) => (
-            <ProductCard key={product.id} {...product} />
+            <ProductCard 
+              key={product.id} 
+              id={product.id}
+              image={product.image}
+              name={product.name}
+              brand={product.brand}
+              price={product.price}
+            />
           ))}
         </div>
       </div>

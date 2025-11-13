@@ -1,21 +1,21 @@
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface ProductCardProps {
+  id: string;
   image: string;
   name: string;
   brand: string;
   price: string;
 }
 
-const ProductCard = ({ image, name, brand, price }: ProductCardProps) => {
+const ProductCard = ({ id, image, name, brand, price }: ProductCardProps) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   const handleClick = () => {
-    toast({
-      title: "Product Added to Cart",
-      description: `${name} has been added to your cart.`,
-    });
+    navigate(`/product/${id}`);
   };
   
   return (
