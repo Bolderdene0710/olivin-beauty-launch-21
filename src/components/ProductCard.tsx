@@ -1,4 +1,5 @@
 import { Card } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 
 interface ProductCardProps {
   image: string;
@@ -8,8 +9,20 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ image, name, brand, price }: ProductCardProps) => {
+  const { toast } = useToast();
+  
+  const handleClick = () => {
+    toast({
+      title: "Product Added to Cart",
+      description: `${name} has been added to your cart.`,
+    });
+  };
+  
   return (
-    <Card className="group overflow-hidden border-border hover:border-primary transition-all duration-300 hover:shadow-xl min-w-[280px] bg-card">
+    <Card 
+      className="group overflow-hidden border-border hover:border-primary transition-all duration-300 hover:shadow-xl min-w-[280px] bg-card cursor-pointer"
+      onClick={handleClick}
+    >
       <div className="aspect-square overflow-hidden bg-muted">
         <img
           src={image}

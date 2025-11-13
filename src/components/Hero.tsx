@@ -18,10 +18,23 @@ const Hero = () => {
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <Button size="lg" className="text-lg">
+              <Button 
+                size="lg" 
+                className="text-lg"
+                onClick={() => {
+                  document.getElementById('best-sellers')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+              >
                 Shop Now
               </Button>
-              <Button size="lg" variant="outline" className="text-lg">
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="text-lg"
+                onClick={() => {
+                  document.getElementById('best-sellers')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+              >
                 View Collection
               </Button>
             </div>
