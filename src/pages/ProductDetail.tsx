@@ -5,12 +5,15 @@ import { Separator } from "@/components/ui/separator";
 import { Star, ArrowLeft, ShoppingCart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { getProductById } from "@/data/products";
+import { useCart } from "@/contexts/CartContext";
 import Footer from "@/components/Footer";
+import Header from "@/components/Header";
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { addItem } = useCart();
   
   const product = id ? getProductById(id) : undefined;
 
@@ -26,6 +29,15 @@ const ProductDetail = () => {
   }
 
   const handleAddToCart = () => {
+    if (!product) return;
+    
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image,
+    });
+    
     toast({
       title: "Added to Cart",
       description: `${product.name} has been added to your cart.`,
@@ -51,19 +63,7 @@ const ProductDetail = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border sticky top-0 bg-background/95 backdrop-blur-sm z-10">
-        <div className="container mx-auto px-4 py-4">
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/")}
-            className="gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Home
-          </Button>
-        </div>
-      </header>
+      <Header />
 
       {/* Product Content */}
       <main className="container mx-auto px-4 py-8 md:py-12">
