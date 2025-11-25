@@ -2,6 +2,8 @@ import productSerum from "@/assets/product-serum.jpg";
 import productToner from "@/assets/product-toner.jpg";
 import productCream from "@/assets/product-cream.jpg";
 
+export type ProductCategory = "Serums" | "Toners" | "Creams" | "Cleansers";
+
 export interface Product {
   id: string;
   name: string;
@@ -9,6 +11,7 @@ export interface Product {
   price: string;
   priceNumber: number;
   image: string;
+  category: ProductCategory;
   description: string;
   ingredients: string[];
   howToUse: string;
@@ -32,6 +35,7 @@ export const products: Product[] = [
     price: "89,000₮",
     priceNumber: 89000,
     image: productSerum,
+    category: "Serums",
     description: "A lightweight, fast-absorbing serum packed with 5 types of hyaluronic acid to deliver intense hydration deep into the skin. Perfect for all skin types, especially dehydrated and sensitive skin.",
     ingredients: [
       "Water",
@@ -81,6 +85,7 @@ export const products: Product[] = [
     price: "79,000₮",
     priceNumber: 79000,
     image: productToner,
+    category: "Toners",
     description: "A hydrating toner enriched with deep sea water from Ulleungdo Island. Balances skin's pH levels while providing minerals and moisture. Ideal for all skin types, particularly dry and sensitive skin.",
     ingredients: [
       "Sea Water (74.68%)",
@@ -123,6 +128,7 @@ export const products: Product[] = [
     price: "69,000₮",
     priceNumber: 69000,
     image: productCream,
+    category: "Creams",
     description: "A rich, nourishing cream formulated with ceramides to strengthen the skin barrier. Perfect for very dry, sensitive, or eczema-prone skin. Non-greasy formula absorbs quickly.",
     ingredients: [
       "Water",
