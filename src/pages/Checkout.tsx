@@ -5,6 +5,13 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
@@ -20,16 +27,33 @@ const Checkout = () => {
     email: "",
     firstName: "",
     lastName: "",
-    address: "",
+    detailedAddress: "",
     city: "",
-    postalCode: "",
-    country: "",
+    district: "",
+    khoroo: "",
+    phoneNumber: "",
   });
+
+  const mongolianDistricts = [
+    "Bayanzurkh",
+    "Sukhbaatar",
+    "Khan-Uul",
+    "Bayangol",
+    "Songinokhairkhan",
+    "Chingeltei",
+  ];
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSelectChange = (name: string, value: string) => {
+    setFormData({
+      ...formData,
+      [name]: value,
     });
   };
 
@@ -111,48 +135,74 @@ const Checkout = () => {
                   </div>
 
                   <div>
-                    <Label htmlFor="address">Address</Label>
+                    <Label htmlFor="phoneNumber">Phone Number *</Label>
                     <Input
-                      id="address"
-                      name="address"
+                      id="phoneNumber"
+                      name="phoneNumber"
+                      type="tel"
                       required
-                      value={formData.address}
+                      value={formData.phoneNumber}
                       onChange={handleInputChange}
-                      placeholder="123 Main Street"
+                      placeholder="+976 99123456"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="city">City</Label>
+                    <Input
+                      id="city"
+                      name="city"
+                      required
+                      value={formData.city}
+                      onChange={handleInputChange}
+                      placeholder="Ulaanbaatar"
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="city">City</Label>
-                      <Input
-                        id="city"
-                        name="city"
+                      <Label htmlFor="district">District *</Label>
+                      <Select
+                        value={formData.district}
+                        onValueChange={(value) => handleSelectChange("district", value)}
                         required
-                        value={formData.city}
-                        onChange={handleInputChange}
-                      />
+                      >
+                        <SelectTrigger className="bg-background">
+                          <SelectValue placeholder="Select district" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background z-50">
+                          {mongolianDistricts.map((district) => (
+                            <SelectItem key={district} value={district}>
+                              {district}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div>
-                      <Label htmlFor="postalCode">Postal Code</Label>
+                      <Label htmlFor="khoroo">Khoroo *</Label>
                       <Input
-                        id="postalCode"
-                        name="postalCode"
+                        id="khoroo"
+                        name="khoroo"
+                        type="number"
                         required
-                        value={formData.postalCode}
+                        value={formData.khoroo}
                         onChange={handleInputChange}
+                        placeholder="1"
+                        min="1"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <Label htmlFor="country">Country</Label>
+                    <Label htmlFor="detailedAddress">Detailed Address (Street/Apartment) *</Label>
                     <Input
-                      id="country"
-                      name="country"
+                      id="detailedAddress"
+                      name="detailedAddress"
                       required
-                      value={formData.country}
+                      value={formData.detailedAddress}
                       onChange={handleInputChange}
+                      placeholder="Building 5, Apartment 12"
                     />
                   </div>
                 </div>
