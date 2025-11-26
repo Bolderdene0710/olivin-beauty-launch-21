@@ -211,9 +211,27 @@ const Checkout = () => {
               {/* Payment */}
               <Card className="p-6">
                 <h2 className="text-xl font-semibold mb-4">Payment</h2>
-                <p className="text-muted-foreground text-sm">
-                  Payment processing is simulated for demonstration purposes.
-                </p>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 rounded-full border-2 border-primary flex items-center justify-center">
+                      <div className="w-2.5 h-2.5 rounded-full bg-primary" />
+                    </div>
+                    <span className="font-medium">Bank Transfer</span>
+                  </div>
+                  <div className="bg-muted/50 p-4 rounded-lg space-y-2">
+                    <p className="text-sm">
+                      Please transfer the total amount to:
+                    </p>
+                    <div className="font-mono text-sm space-y-1">
+                      <p><span className="font-semibold">Bank:</span> Khan Bank</p>
+                      <p><span className="font-semibold">Account:</span> 5037716403</p>
+                      <p><span className="font-semibold">Account Name:</span> Account Name</p>
+                    </div>
+                    <p className="text-xs text-muted-foreground pt-2">
+                      Your order will be processed after payment confirmation.
+                    </p>
+                  </div>
+                </div>
               </Card>
             </form>
           </div>
@@ -270,7 +288,7 @@ const Checkout = () => {
                 onClick={handleSubmit}
                 disabled={isProcessing}
               >
-                {isProcessing ? "Processing..." : "Place Order"}
+                {isProcessing ? "Processing..." : "Confirm Order"}
               </Button>
             </Card>
           </div>
