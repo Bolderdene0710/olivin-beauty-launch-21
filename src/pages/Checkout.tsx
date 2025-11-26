@@ -16,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { supabase } from "@/integrations/supabase/client";
 
 const Checkout = () => {
   const { items, cartTotal, clearCart } = useCart();
@@ -61,16 +62,54 @@ const Checkout = () => {
     e.preventDefault();
     setIsProcessing(true);
 
-    // Simulate payment processing
-    setTimeout(() => {
+    try {
+      // Generate order number
+      const orderNumber = `ORD${Date.now()}${Math.floor(Math.random() * 1000)}`;
+      
+      // Prepare order data
+      const orderData = {
+        order_number: orderNumber,
+        customer_name: `${formData.firstName} ${formData.lastName}`,
+        customer_email: formData.email,
+        phone_number: formData.phoneNumber,
+        district: formData.district,
+        khoroo: formData.khoroo,
+        detailed_address: formData.detailedAddress,
+        total_amount: cartTotal,
+        status: "pending",
+        items: items.map(item => ({
+          id: item.id,
+          name: item.name,
+          price: parseFloat(item.price.replace("$", "")),
+          quantity: item.quantity,
+        })),
+      };
+
+      // Save order to database
+      const { error } = await supabase
+        .from("orders")
+        .insert([orderData]);
+
+      if (error) throw error;
+
       clearCart();
       toast({
         title: "Order Placed Successfully!",
-        description: "Thank you for your purchase. You'll receive a confirmation email shortly.",
+        description: `Your order number is ${orderNumber}. Please save it to track your order.`,
+        duration: 6000,
       });
-      navigate("/");
+      
+      // Navigate to order tracking with the order number
+      navigate(`/track-order?order=${orderNumber}`);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to place order. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
       setIsProcessing(false);
-    }, 2000);
+    }
   };
 
   if (items.length === 0) {

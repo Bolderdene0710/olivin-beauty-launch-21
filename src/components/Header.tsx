@@ -37,6 +37,13 @@ const Header = () => {
               Shop
             </NavLink>
             <NavLink
+              to="/track-order"
+              className="text-sm font-medium text-foreground hover:text-primary transition-colors"
+              activeClassName="text-primary"
+            >
+              Track Order
+            </NavLink>
+            <NavLink
               to="/about"
               className="text-sm font-medium text-foreground hover:text-primary transition-colors"
               activeClassName="text-primary"
@@ -103,6 +110,14 @@ const Header = () => {
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Shop
+            </NavLink>
+            <NavLink
+              to="/track-order"
+              className="block text-sm font-medium text-foreground hover:text-primary transition-colors"
+              activeClassName="text-primary"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Track Order
             </NavLink>
             <NavLink
               to="/about"
