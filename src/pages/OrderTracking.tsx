@@ -6,11 +6,12 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useSearchParams } from "react-router-dom";
-import { Search, Package, Clock, CheckCircle, Truck } from "lucide-react";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { Search, Package, Clock, CheckCircle, Truck, FileText } from "lucide-react";
 
 const OrderTracking = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [orderNumber, setOrderNumber] = useState("");
   const [order, setOrder] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -198,6 +199,15 @@ const OrderTracking = () => {
                   </div>
                 </div>
               </Card>
+
+              <Button
+                onClick={() => navigate(`/invoice?order=${order.order_number}`)}
+                variant="outline"
+                className="w-full gap-2"
+              >
+                <FileText className="w-4 h-4" />
+                View Invoice
+              </Button>
             </div>
           )}
         </div>
