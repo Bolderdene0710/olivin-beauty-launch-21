@@ -1,14 +1,33 @@
 import { ShoppingBag, User, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NavLink } from "@/components/NavLink";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCart } from "@/contexts/CartContext";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { User as SupabaseUser } from "@supabase/supabase-js";
 
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
   const { cartCount } = useCart();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   return (
     <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b border-border">
@@ -56,7 +75,7 @@ const Header = () => {
           <div className="flex items-center space-x-4">
             {/* User Icon */}
             <Button variant="ghost" size="icon" asChild className="hidden md:flex">
-              <NavLink to="/auth">
+              <NavLink to={user ? "/profile" : "/auth"}>
                 <User className="h-5 w-5" />
               </NavLink>
             </Button>
@@ -128,12 +147,12 @@ const Header = () => {
               About
             </NavLink>
             <NavLink
-              to="/auth"
+              to={user ? "/profile" : "/auth"}
               className="block text-sm font-medium text-foreground hover:text-primary transition-colors"
               activeClassName="text-primary"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              Account
+              {user ? "Profile" : "Account"}
             </NavLink>
           </nav>
         )}
