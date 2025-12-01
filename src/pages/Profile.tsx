@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { User, Session } from "@supabase/supabase-js";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Loader2, LogOut, Save, Mail, User as UserIcon, Image, ShoppingBag, Package, Heart } from "lucide-react";
+import { Loader2, LogOut, Save, Mail, User as UserIcon, Upload, ShoppingBag, Package, Heart, Phone } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -18,7 +18,11 @@ const Profile = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [username, setUsername] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -50,7 +54,7 @@ const Profile = () => {
       // Fetch profile data
       const { data: profile, error } = await supabase
         .from("profiles")
-        .select("username, avatar_url")
+        .select("username, avatar_url, first_name, last_name, phone_number")
         .eq("id", session.user.id)
         .maybeSingle();
 
@@ -62,6 +66,9 @@ const Profile = () => {
         });
       } else if (profile) {
         setUsername(profile.username || "");
+        setFirstName(profile.first_name || "");
+        setLastName(profile.last_name || "");
+        setPhoneNumber(profile.phone_number || "");
         setAvatarUrl(profile.avatar_url || "");
       }
 
@@ -73,9 +80,94 @@ const Profile = () => {
     return () => subscription.unsubscribe();
   }, [navigate, toast]);
 
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast({
+        variant: "destructive",
+        title: "Invalid file type",
+        description: "Please upload an image file.",
+      });
+      return;
+    }
+
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast({
+        variant: "destructive",
+        title: "File too large",
+        description: "Please upload an image smaller than 2MB.",
+      });
+      return;
+    }
+
+    setUploading(true);
+
+    try {
+      // Delete old avatar if exists
+      if (avatarUrl) {
+        const oldPath = avatarUrl.split("/").pop();
+        if (oldPath) {
+          await supabase.storage.from("avatars").remove([`${user.id}/${oldPath}`]);
+        }
+      }
+
+      // Upload new avatar
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `${user.id}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(filePath);
+
+      // Update profile with new avatar URL
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ avatar_url: publicUrl })
+        .eq("id", user.id);
+
+      if (updateError) throw updateError;
+
+      setAvatarUrl(publicUrl);
+      toast({
+        title: "Avatar updated",
+        description: "Your profile picture has been updated successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Upload failed",
+        description: error.message,
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
+
+    // Validate phone number
+    if (!phoneNumber.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Phone number required",
+        description: "Please enter your phone number.",
+      });
+      return;
+    }
 
     setSaving(true);
 
@@ -83,7 +175,9 @@ const Profile = () => {
       .from("profiles")
       .update({
         username: username.trim() || null,
-        avatar_url: avatarUrl.trim() || null,
+        first_name: firstName.trim() || null,
+        last_name: lastName.trim() || null,
+        phone_number: phoneNumber.trim(),
       })
       .eq("id", user.id);
 
@@ -142,15 +236,35 @@ const Profile = () => {
           <Card className="overflow-hidden border-2 shadow-lg">
             <div className="bg-gradient-to-r from-primary/20 via-primary/10 to-accent/20 p-8 md:p-12">
               <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-                <Avatar className="h-24 w-24 md:h-28 md:w-28 border-4 border-background shadow-xl">
-                  <AvatarImage src={avatarUrl} alt={username || "User"} />
-                  <AvatarFallback className="text-3xl font-bold bg-primary/30">
-                    {username ? username.charAt(0).toUpperCase() : user?.email?.charAt(0).toUpperCase() || "U"}
-                  </AvatarFallback>
-                </Avatar>
+                <div className="relative group">
+                  <Avatar className="h-24 w-24 md:h-28 md:w-28 border-4 border-background shadow-xl">
+                    <AvatarImage src={avatarUrl} alt={username || "User"} />
+                    <AvatarFallback className="text-3xl font-bold bg-primary/30">
+                      {firstName ? firstName.charAt(0).toUpperCase() : username ? username.charAt(0).toUpperCase() : user?.email?.charAt(0).toUpperCase() || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <label
+                    htmlFor="avatar-upload"
+                    className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                  >
+                    {uploading ? (
+                      <Loader2 className="h-6 w-6 text-white animate-spin" />
+                    ) : (
+                      <Upload className="h-6 w-6 text-white" />
+                    )}
+                  </label>
+                  <input
+                    id="avatar-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarUpload}
+                    disabled={uploading}
+                    className="hidden"
+                  />
+                </div>
                 <div className="flex-1 text-center md:text-left space-y-2">
                   <h1 className="text-3xl md:text-4xl font-bold text-foreground">
-                    {username || "Welcome"}
+                    {firstName && lastName ? `${firstName} ${lastName}` : username || "Welcome"}
                   </h1>
                   <p className="text-muted-foreground flex items-center justify-center md:justify-start gap-2">
                     <Mail className="h-4 w-4" />
@@ -184,21 +298,36 @@ const Profile = () => {
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSave} className="space-y-5">
-                  <div className="space-y-2">
-                    <Label htmlFor="email" className="flex items-center gap-2">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                      Email Address
-                    </Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={user?.email || ""}
-                      disabled
-                      className="bg-muted/50"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Contact support to change your email
-                    </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="firstName" className="flex items-center gap-2">
+                        <UserIcon className="h-4 w-4 text-muted-foreground" />
+                        First Name
+                      </Label>
+                      <Input
+                        id="firstName"
+                        type="text"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        placeholder="Enter first name"
+                        disabled={saving}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="lastName" className="flex items-center gap-2">
+                        <UserIcon className="h-4 w-4 text-muted-foreground" />
+                        Last Name
+                      </Label>
+                      <Input
+                        id="lastName"
+                        type="text"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        placeholder="Enter last name"
+                        disabled={saving}
+                      />
+                    </div>
                   </div>
 
                   <div className="space-y-2">
@@ -217,20 +346,38 @@ const Profile = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="avatar" className="flex items-center gap-2">
-                      <Image className="h-4 w-4 text-muted-foreground" />
-                      Avatar URL
+                    <Label htmlFor="email" className="flex items-center gap-2">
+                      <Mail className="h-4 w-4 text-muted-foreground" />
+                      Email Address
                     </Label>
                     <Input
-                      id="avatar"
-                      type="url"
-                      value={avatarUrl}
-                      onChange={(e) => setAvatarUrl(e.target.value)}
-                      placeholder="https://example.com/avatar.jpg"
-                      disabled={saving}
+                      id="email"
+                      type="email"
+                      value={user?.email || ""}
+                      disabled
+                      className="bg-muted/50"
                     />
                     <p className="text-xs text-muted-foreground">
-                      Paste a link to your profile picture
+                      Contact support to change your email
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="phoneNumber" className="flex items-center gap-2">
+                      <Phone className="h-4 w-4 text-muted-foreground" />
+                      Phone Number <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="phoneNumber"
+                      type="tel"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      placeholder="Enter phone number"
+                      disabled={saving}
+                      required
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Required for order updates and delivery
                     </p>
                   </div>
 
