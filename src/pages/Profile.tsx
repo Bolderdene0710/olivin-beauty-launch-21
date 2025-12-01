@@ -8,7 +8,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { User, Session } from "@supabase/supabase-js";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Loader2, LogOut, Save } from "lucide-react";
+import { Loader2, LogOut, Save, Mail, User as UserIcon, Image, ShoppingBag, Package, Heart } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
@@ -133,74 +134,113 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-muted/30 to-background">
       <Header />
-      <main className="flex-1 container mx-auto px-4 py-12">
-        <div className="max-w-2xl mx-auto">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-3xl font-bold">My Profile</CardTitle>
-                  <CardDescription>Manage your account information</CardDescription>
-                </div>
-                <Avatar className="h-16 w-16">
+      <main className="flex-1 container mx-auto px-4 py-8 md:py-12">
+        <div className="max-w-5xl mx-auto space-y-8">
+          {/* Profile Header Card */}
+          <Card className="overflow-hidden border-2 shadow-lg">
+            <div className="bg-gradient-to-r from-primary/20 via-primary/10 to-accent/20 p-8 md:p-12">
+              <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+                <Avatar className="h-24 w-24 md:h-28 md:w-28 border-4 border-background shadow-xl">
                   <AvatarImage src={avatarUrl} alt={username || "User"} />
-                  <AvatarFallback className="text-lg">
+                  <AvatarFallback className="text-3xl font-bold bg-primary/30">
                     {username ? username.charAt(0).toUpperCase() : user?.email?.charAt(0).toUpperCase() || "U"}
                   </AvatarFallback>
                 </Avatar>
+                <div className="flex-1 text-center md:text-left space-y-2">
+                  <h1 className="text-3xl md:text-4xl font-bold text-foreground">
+                    {username || "Welcome"}
+                  </h1>
+                  <p className="text-muted-foreground flex items-center justify-center md:justify-start gap-2">
+                    <Mail className="h-4 w-4" />
+                    {user?.email}
+                  </p>
+                  <div className="flex gap-2 justify-center md:justify-start pt-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleSignOut}
+                      className="bg-background/80 hover:bg-background"
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Sign Out
+                    </Button>
+                  </div>
+                </div>
               </div>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSave} className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={user?.email || ""}
-                    disabled
-                    className="bg-muted"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Email cannot be changed from this page
-                  </p>
-                </div>
+            </div>
+          </Card>
 
-                <div className="space-y-2">
-                  <Label htmlFor="username">Username</Label>
-                  <Input
-                    id="username"
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="Enter your username"
-                    disabled={saving}
-                  />
-                </div>
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Account Information Card */}
+            <Card className="shadow-md hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <UserIcon className="h-5 w-5 text-primary" />
+                  Account Information
+                </CardTitle>
+                <CardDescription>Update your personal details</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSave} className="space-y-5">
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="flex items-center gap-2">
+                      <Mail className="h-4 w-4 text-muted-foreground" />
+                      Email Address
+                    </Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={user?.email || ""}
+                      disabled
+                      className="bg-muted/50"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Contact support to change your email
+                    </p>
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="avatar">Avatar URL</Label>
-                  <Input
-                    id="avatar"
-                    type="url"
-                    value={avatarUrl}
-                    onChange={(e) => setAvatarUrl(e.target.value)}
-                    placeholder="https://example.com/avatar.jpg"
-                    disabled={saving}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Enter a URL to an image for your avatar
-                  </p>
-                </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="username" className="flex items-center gap-2">
+                      <UserIcon className="h-4 w-4 text-muted-foreground" />
+                      Username
+                    </Label>
+                    <Input
+                      id="username"
+                      type="text"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      placeholder="Enter your username"
+                      disabled={saving}
+                    />
+                  </div>
 
-                <div className="flex gap-4 pt-4">
-                  <Button type="submit" disabled={saving} className="flex-1">
+                  <div className="space-y-2">
+                    <Label htmlFor="avatar" className="flex items-center gap-2">
+                      <Image className="h-4 w-4 text-muted-foreground" />
+                      Avatar URL
+                    </Label>
+                    <Input
+                      id="avatar"
+                      type="url"
+                      value={avatarUrl}
+                      onChange={(e) => setAvatarUrl(e.target.value)}
+                      placeholder="https://example.com/avatar.jpg"
+                      disabled={saving}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Paste a link to your profile picture
+                    </p>
+                  </div>
+
+                  <Separator className="my-4" />
+
+                  <Button type="submit" disabled={saving} className="w-full" size="lg">
                     {saving ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Saving...
+                        Saving Changes...
                       </>
                     ) : (
                       <>
@@ -209,19 +249,90 @@ const Profile = () => {
                       </>
                     )}
                   </Button>
+                </form>
+              </CardContent>
+            </Card>
+
+            {/* Quick Actions Card */}
+            <div className="space-y-6">
+              <Card className="shadow-md hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <CardTitle className="text-xl">Quick Actions</CardTitle>
+                  <CardDescription>Shortcuts to popular features</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
                   <Button
-                    type="button"
                     variant="outline"
-                    onClick={handleSignOut}
-                    className="flex-1"
+                    className="w-full justify-start h-auto py-4"
+                    onClick={() => navigate("/shop")}
                   >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Sign Out
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <ShoppingBag className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="text-left">
+                        <div className="font-semibold">Continue Shopping</div>
+                        <div className="text-xs text-muted-foreground">Browse our products</div>
+                      </div>
+                    </div>
                   </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
+
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start h-auto py-4"
+                    onClick={() => navigate("/track-order")}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-lg bg-accent/30 flex items-center justify-center">
+                        <Package className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="text-left">
+                        <div className="font-semibold">Track My Orders</div>
+                        <div className="text-xs text-muted-foreground">Check order status</div>
+                      </div>
+                    </div>
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start h-auto py-4"
+                    onClick={() => navigate("/cart")}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-lg bg-secondary flex items-center justify-center">
+                        <Heart className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="text-left">
+                        <div className="font-semibold">View Cart</div>
+                        <div className="text-xs text-muted-foreground">Complete your purchase</div>
+                      </div>
+                    </div>
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Account Stats */}
+              <Card className="shadow-md bg-gradient-to-br from-primary/5 to-accent/5 border-primary/20">
+                <CardHeader>
+                  <CardTitle className="text-xl">Account Status</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center py-2 border-b border-border/50">
+                      <span className="text-sm text-muted-foreground">Member Since</span>
+                      <span className="font-semibold">
+                        {user?.created_at ? new Date(user.created_at).toLocaleDateString() : "N/A"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-sm text-muted-foreground">Account Status</span>
+                      <span className="font-semibold text-primary">Active</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </div>
       </main>
       <Footer />
