@@ -1,9 +1,11 @@
 import { useState, useMemo } from "react";
-import { products, ProductCategory } from "@/data/products";
+import { ProductCategory } from "@/types/product";
+import { useProducts } from "@/hooks/useProducts";
 import ProductCard from "@/components/ProductCard";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Slider } from "@/components/ui/slider";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -24,14 +26,15 @@ import {
 type SortOption = "price-low" | "price-high" | "newest" | "popular";
 
 const Shop = () => {
+  const { data: products = [], isLoading, error } = useProducts();
   const [selectedCategories, setSelectedCategories] = useState<ProductCategory[]>([]);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 100000]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000000]);
   const [sortBy, setSortBy] = useState<SortOption>("popular");
 
   const categories: ProductCategory[] = ["Serums", "Toners", "Creams", "Cleansers"];
   
-  const maxPrice = Math.max(...products.map(p => p.priceNumber));
-  const minPrice = Math.min(...products.map(p => p.priceNumber));
+  const maxPrice = products.length > 0 ? Math.max(...products.map(p => p.priceNumber)) : 1000000;
+  const minPrice = products.length > 0 ? Math.min(...products.map(p => p.priceNumber)) : 0;
 
   const toggleCategory = (category: ProductCategory) => {
     setSelectedCategories(prev =>
@@ -54,24 +57,23 @@ const Shop = () => {
     });
 
     // Sort products
+    const sorted = [...filtered];
     switch (sortBy) {
       case "price-low":
-        filtered.sort((a, b) => a.priceNumber - b.priceNumber);
+        sorted.sort((a, b) => a.priceNumber - b.priceNumber);
         break;
       case "price-high":
-        filtered.sort((a, b) => b.priceNumber - a.priceNumber);
+        sorted.sort((a, b) => b.priceNumber - a.priceNumber);
         break;
       case "newest":
-        // Since we don't have dates, keep original order (assuming newest first)
-        break;
       case "popular":
       default:
         // Keep original order for popular items
         break;
     }
 
-    return filtered;
-  }, [selectedCategories, priceRange, sortBy]);
+    return sorted;
+  }, [products, selectedCategories, priceRange, sortBy]);
 
   const FilterSidebar = () => (
     <div className="space-y-6">
@@ -97,8 +99,8 @@ const Shop = () => {
           <Slider
             value={priceRange}
             onValueChange={(value) => setPriceRange(value as [number, number])}
-            max={maxPrice}
-            min={minPrice}
+            max={maxPrice || 1000000}
+            min={minPrice || 0}
             step={1000}
             className="mb-4"
           />
@@ -112,6 +114,19 @@ const Shop = () => {
       <Button variant="outline" className="w-full" onClick={clearFilters}>
         Clear Filters
       </Button>
+    </div>
+  );
+
+  const ProductsSkeleton = () => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {[1, 2, 3, 4, 5, 6].map((i) => (
+        <div key={i} className="space-y-4">
+          <Skeleton className="aspect-square w-full rounded-lg" />
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-6 w-full" />
+          <Skeleton className="h-6 w-24" />
+        </div>
+      ))}
     </div>
   );
 
@@ -157,7 +172,7 @@ const Shop = () => {
           <div className="flex-1">
             <div className="flex justify-between items-center mb-6">
               <p className="text-muted-foreground">
-                {filteredAndSortedProducts.length} {filteredAndSortedProducts.length === 1 ? 'product' : 'products'}
+                {isLoading ? "Loading..." : `${filteredAndSortedProducts.length} ${filteredAndSortedProducts.length === 1 ? 'product' : 'products'}`}
               </p>
               
               <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
@@ -173,7 +188,13 @@ const Shop = () => {
               </Select>
             </div>
 
-            {filteredAndSortedProducts.length === 0 ? (
+            {isLoading ? (
+              <ProductsSkeleton />
+            ) : error ? (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">Failed to load products. Please try again later.</p>
+              </div>
+            ) : filteredAndSortedProducts.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-muted-foreground">No products found matching your filters.</p>
                 <Button variant="outline" className="mt-4" onClick={clearFilters}>
@@ -204,4 +225,3 @@ const Shop = () => {
 };
 
 export default Shop;
-
