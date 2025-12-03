@@ -66,11 +66,12 @@ const Checkout = () => {
       // Generate order number
       const orderNumber = `ORD${Date.now()}${Math.floor(Math.random() * 1000)}`;
       
-      // Prepare order data
+      // Prepare order data for external database
+      // Using type assertion to bypass auto-generated types that don't match external DB
       const orderData = {
         order_number: orderNumber,
         customer_name: `${formData.firstName} ${formData.lastName}`,
-        customer_email: formData.email,
+        email: formData.email, // Using 'email' instead of 'customer_email' for external DB
         phone_number: formData.phoneNumber,
         district: formData.district,
         khoroo: formData.khoroo,
@@ -85,10 +86,9 @@ const Checkout = () => {
         })),
       };
 
-      // Save order to database
-      const { error } = await supabase
-        .from("orders")
-        .insert([orderData]);
+      // Save order to database - using type assertion for external DB compatibility
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase.from("orders") as any).insert([orderData]);
 
       if (error) throw error;
 
