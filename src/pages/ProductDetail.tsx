@@ -1,9 +1,13 @@
 import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -80,21 +84,16 @@ const ProductDetail = () => {
       <div className="min-h-screen bg-background">
         <Header />
         <main className="container mx-auto px-4 py-8 md:py-12">
-          {/* Breadcrumb Skeleton */}
           <Skeleton className="h-5 w-64 mb-8" />
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
-            {/* Image Skeleton */}
-            <Skeleton className="aspect-square rounded-xl" />
-
-            {/* Info Skeleton */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+            <Skeleton className="aspect-square rounded-2xl" />
             <div className="space-y-6">
               <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-12 w-40" />
-              <Skeleton className="h-24 w-full" />
-              <div className="flex gap-4">
-                <Skeleton className="h-14 w-32" />
+              <Skeleton className="h-10 w-full max-w-md" />
+              <Skeleton className="h-10 w-32" />
+              <Skeleton className="h-20 w-full" />
+              <div className="flex gap-4 pt-4">
+                <Skeleton className="h-14 w-36" />
                 <Skeleton className="h-14 flex-1" />
               </div>
             </div>
@@ -133,25 +132,27 @@ const ProductDetail = () => {
 
       <main className="container mx-auto px-4 py-6 md:py-10">
         {/* Breadcrumbs */}
-        <Breadcrumb className="mb-8">
+        <Breadcrumb className="mb-6 md:mb-8">
           <BreadcrumbList>
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link to="/" className="flex items-center gap-1">
+                <Link to="/" className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground">
                   <Home className="w-4 h-4" />
-                  Нүүр
+                  <span>Нүүр</span>
                 </Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link to="/shop">Дэлгүүр</Link>
+                <Link to="/shop" className="text-muted-foreground hover:text-foreground">
+                  Дэлгүүр
+                </Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage className="max-w-[200px] truncate">
+              <BreadcrumbPage className="max-w-[200px] truncate text-foreground">
                 {product.name}
               </BreadcrumbPage>
             </BreadcrumbItem>
@@ -159,50 +160,52 @@ const ProductDetail = () => {
         </Breadcrumb>
 
         {/* Product Section - Two Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 mb-16">
-          {/* Product Image */}
-          <div className="sticky top-24">
-            <div className="aspect-square rounded-xl overflow-hidden bg-muted border border-border shadow-lg">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mb-12 lg:mb-16">
+          {/* Left Column - Product Image */}
+          <div className="w-full">
+            <div className="aspect-square w-full max-w-lg mx-auto lg:max-w-none rounded-2xl overflow-hidden bg-muted shadow-lg border border-border">
               <img
                 src={product.image}
                 alt={product.name}
-                className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                className="w-full h-full object-contain p-4"
               />
             </div>
           </div>
 
-          {/* Product Info */}
-          <div className="space-y-6 lg:space-y-8">
-            {/* Brand & Title */}
-            <div>
-              <p className="text-sm text-muted-foreground uppercase tracking-widest font-medium mb-2">
-                {product.brand}
-              </p>
-              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground leading-tight">
-                {product.name}
-              </h1>
-            </div>
+          {/* Right Column - Product Info */}
+          <div className="flex flex-col space-y-5">
+            {/* Brand */}
+            <p className="text-xs text-muted-foreground uppercase tracking-[0.2em] font-medium">
+              {product.brand || "OLIVIN BEAUTY"}
+            </p>
+
+            {/* Title */}
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground leading-tight">
+              {product.name}
+            </h1>
 
             {/* Price */}
-            <p className="text-3xl md:text-4xl font-bold text-primary">
+            <p className="text-2xl md:text-3xl font-bold text-primary">
               {product.price}
             </p>
 
-            {/* Short Description */}
-            {product.description && (
-              <p className="text-muted-foreground leading-relaxed text-base">
-                {product.description}
+            {/* Description */}
+            <div className="py-2">
+              <p className="text-muted-foreground leading-relaxed">
+                {product.description && product.description.trim() !== ""
+                  ? product.description
+                  : "Энэ бүтээгдэхүүний тайлбар одоогоор байхгүй байна."}
               </p>
-            )}
+            </div>
 
-            {/* Benefits */}
-            {product.benefits.length > 0 && (
-              <div className="space-y-3">
-                <h3 className="font-semibold text-foreground">Үндсэн давуу талууд:</h3>
-                <ul className="space-y-2">
-                  {product.benefits.slice(0, 4).map((benefit, index) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <span className="text-primary mt-1">✓</span>
+            {/* Benefits Preview */}
+            {product.benefits && product.benefits.length > 0 && (
+              <div className="space-y-2 py-2">
+                <p className="text-sm font-semibold text-foreground">Давуу талууд:</p>
+                <ul className="space-y-1.5">
+                  {product.benefits.slice(0, 3).map((benefit, index) => (
+                    <li key={index} className="flex items-start gap-2 text-sm">
+                      <span className="text-primary font-bold">✓</span>
                       <span className="text-muted-foreground">{benefit}</span>
                     </li>
                   ))}
@@ -211,23 +214,23 @@ const ProductDetail = () => {
             )}
 
             {/* Quantity & Add to Cart */}
-            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+            <div className="flex flex-col sm:flex-row items-stretch gap-4 pt-4">
               {/* Quantity Selector */}
-              <div className="flex items-center border border-border rounded-xl overflow-hidden">
+              <div className="flex items-center justify-center border border-border rounded-xl bg-background">
                 <button
                   onClick={decrementQuantity}
-                  className="p-4 hover:bg-muted transition-colors"
-                  aria-label="Decrease quantity"
+                  className="p-4 hover:bg-muted transition-colors rounded-l-xl"
+                  aria-label="Тоо хэмжээ хасах"
                 >
                   <Minus className="w-4 h-4" />
                 </button>
-                <span className="px-6 py-4 font-semibold text-lg min-w-[60px] text-center">
+                <span className="px-6 py-4 font-semibold text-lg min-w-[60px] text-center border-x border-border">
                   {quantity}
                 </span>
                 <button
                   onClick={incrementQuantity}
-                  className="p-4 hover:bg-muted transition-colors"
-                  aria-label="Increase quantity"
+                  className="p-4 hover:bg-muted transition-colors rounded-r-xl"
+                  aria-label="Тоо хэмжээ нэмэх"
                 >
                   <Plus className="w-4 h-4" />
                 </button>
@@ -236,7 +239,7 @@ const ProductDetail = () => {
               {/* Add to Cart Button */}
               <Button
                 size="lg"
-                className="flex-1 text-lg gap-2 h-14 rounded-xl"
+                className="flex-1 text-base gap-2 h-14 rounded-xl font-semibold"
                 onClick={handleAddToCart}
               >
                 <ShoppingCart className="w-5 h-5" />
@@ -246,125 +249,118 @@ const ProductDetail = () => {
           </div>
         </div>
 
-        {/* Product Details Tabs */}
-        <div className="mb-16">
-          <Tabs defaultValue="description" className="w-full">
-            <TabsList className="w-full justify-start border-b border-border rounded-none bg-transparent p-0 h-auto mb-8 overflow-x-auto">
-              <TabsTrigger
-                value="description"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-6 py-4 text-base"
-              >
+        {/* Product Details Accordion */}
+        <div className="mb-12 lg:mb-16 max-w-3xl">
+          <Accordion type="multiple" className="w-full" defaultValue={["description"]}>
+            {/* Description */}
+            <AccordionItem value="description" className="border-b border-border">
+              <AccordionTrigger className="text-base font-semibold py-5 hover:no-underline">
                 Тайлбар
-              </TabsTrigger>
-              {product.ingredients.length > 0 && (
-                <TabsTrigger
-                  value="ingredients"
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-6 py-4 text-base"
-                >
-                  Найрлага
-                </TabsTrigger>
-              )}
-              {product.howToUse && (
-                <TabsTrigger
-                  value="howToUse"
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-6 py-4 text-base"
-                >
-                  Хэрэглэх заавар
-                </TabsTrigger>
-              )}
-              <TabsTrigger
-                value="reviews"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-6 py-4 text-base"
-              >
-                Сэтгэгдэл ({product.reviews.length})
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="description" className="mt-0">
-              <Card className="p-6 md:p-8 rounded-xl">
-                <p className="text-muted-foreground leading-relaxed text-base">
-                  {product.description || "Тайлбар байхгүй байна."}
+              </AccordionTrigger>
+              <AccordionContent className="pb-5">
+                <p className="text-muted-foreground leading-relaxed">
+                  {product.description && product.description.trim() !== ""
+                    ? product.description
+                    : "Энэ бүтээгдэхүүний тайлбар одоогоор байхгүй байна."}
                 </p>
-                {product.benefits.length > 0 && (
-                  <div className="mt-6">
-                    <h4 className="font-semibold text-foreground mb-4">
-                      Бүх давуу талууд:
-                    </h4>
-                    <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {product.benefits && product.benefits.length > 0 && (
+                  <div className="mt-4">
+                    <p className="font-medium text-foreground mb-2">Бүх давуу талууд:</p>
+                    <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
                       {product.benefits.map((benefit, index) => (
-                        <li key={index} className="flex items-start gap-2">
-                          <span className="text-primary mt-0.5">✓</span>
+                        <li key={index} className="flex items-start gap-2 text-sm">
+                          <span className="text-primary font-bold">✓</span>
                           <span className="text-muted-foreground">{benefit}</span>
                         </li>
                       ))}
                     </ul>
                   </div>
                 )}
-              </Card>
-            </TabsContent>
+              </AccordionContent>
+            </AccordionItem>
 
-            <TabsContent value="ingredients" className="mt-0">
-              <Card className="p-6 md:p-8 rounded-xl">
-                <div className="flex flex-wrap gap-2">
-                  {product.ingredients.map((ingredient, index) => (
-                    <span
-                      key={index}
-                      className="px-4 py-2 bg-accent text-accent-foreground rounded-full text-sm font-medium"
-                    >
-                      {ingredient}
-                    </span>
-                  ))}
-                </div>
-              </Card>
-            </TabsContent>
+            {/* Ingredients */}
+            <AccordionItem value="ingredients" className="border-b border-border">
+              <AccordionTrigger className="text-base font-semibold py-5 hover:no-underline">
+                Найрлага
+              </AccordionTrigger>
+              <AccordionContent className="pb-5">
+                {product.ingredients && product.ingredients.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {product.ingredients.map((ingredient, index) => (
+                      <span
+                        key={index}
+                        className="px-3 py-1.5 bg-accent text-accent-foreground rounded-full text-sm"
+                      >
+                        {ingredient}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground">
+                    Найрлагын мэдээлэл одоогоор байхгүй байна.
+                  </p>
+                )}
+              </AccordionContent>
+            </AccordionItem>
 
-            <TabsContent value="howToUse" className="mt-0">
-              <Card className="p-6 md:p-8 rounded-xl">
-                <p className="text-muted-foreground leading-relaxed text-base whitespace-pre-line">
-                  {product.howToUse}
+            {/* How to Use */}
+            <AccordionItem value="howToUse" className="border-b border-border">
+              <AccordionTrigger className="text-base font-semibold py-5 hover:no-underline">
+                Хэрэглэх заавар
+              </AccordionTrigger>
+              <AccordionContent className="pb-5">
+                <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
+                  {product.howToUse && product.howToUse.trim() !== ""
+                    ? product.howToUse
+                    : "Хэрэглэх зааврын мэдээлэл одоогоор байхгүй байна."}
                 </p>
-              </Card>
-            </TabsContent>
+              </AccordionContent>
+            </AccordionItem>
 
-            <TabsContent value="reviews" className="mt-0">
-              {product.reviews.length > 0 ? (
-                <div className="space-y-4">
-                  {product.reviews.map((review) => (
-                    <Card key={review.id} className="p-6 rounded-xl">
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <p className="font-semibold text-foreground">
-                            {review.author}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {new Date(review.date).toLocaleDateString("mn-MN", {
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                            })}
-                          </p>
+            {/* Reviews */}
+            <AccordionItem value="reviews" className="border-b border-border">
+              <AccordionTrigger className="text-base font-semibold py-5 hover:no-underline">
+                Сэтгэгдэл ({product.reviews?.length || 0})
+              </AccordionTrigger>
+              <AccordionContent className="pb-5">
+                {product.reviews && product.reviews.length > 0 ? (
+                  <div className="space-y-4">
+                    {product.reviews.map((review) => (
+                      <div key={review.id} className="p-4 bg-muted/50 rounded-xl">
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <p className="font-medium text-foreground">
+                              {review.author}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(review.date).toLocaleDateString("mn-MN", {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              })}
+                            </p>
+                          </div>
+                          {renderStars(review.rating)}
                         </div>
-                        {renderStars(review.rating)}
+                        <p className="text-muted-foreground text-sm">{review.comment}</p>
                       </div>
-                      <p className="text-muted-foreground">{review.comment}</p>
-                    </Card>
-                  ))}
-                </div>
-              ) : (
-                <Card className="p-8 rounded-xl text-center">
+                    ))}
+                  </div>
+                ) : (
                   <p className="text-muted-foreground">
                     Одоогоор сэтгэгдэл алга байна.
                   </p>
-                </Card>
-              )}
-            </TabsContent>
-          </Tabs>
+                )}
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </div>
 
         {/* Related Products */}
         {relatedProducts && relatedProducts.length > 0 && (
-          <section className="mb-16">
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-8">
+          <section className="mb-12 lg:mb-16">
+            <h2 className="text-xl md:text-2xl font-bold text-foreground mb-6">
               Танд таалагдаж магадгүй
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
@@ -385,12 +381,12 @@ const ProductDetail = () => {
 
       {/* Sticky Add to Cart on Mobile */}
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t border-border lg:hidden z-50">
-        <div className="container mx-auto flex items-center gap-4">
-          <div className="flex items-center border border-border rounded-xl overflow-hidden">
+        <div className="container mx-auto flex items-center gap-3">
+          <div className="flex items-center border border-border rounded-xl bg-background">
             <button
               onClick={decrementQuantity}
               className="p-3 hover:bg-muted transition-colors"
-              aria-label="Decrease quantity"
+              aria-label="Тоо хэмжээ хасах"
             >
               <Minus className="w-4 h-4" />
             </button>
@@ -400,18 +396,19 @@ const ProductDetail = () => {
             <button
               onClick={incrementQuantity}
               className="p-3 hover:bg-muted transition-colors"
-              aria-label="Increase quantity"
+              aria-label="Тоо хэмжээ нэмэх"
             >
               <Plus className="w-4 h-4" />
             </button>
           </div>
           <Button
             size="lg"
-            className="flex-1 gap-2 h-12 rounded-xl"
+            className="flex-1 gap-2 h-12 rounded-xl font-semibold"
             onClick={handleAddToCart}
           >
             <ShoppingCart className="w-5 h-5" />
-            Сагсанд нэмэх - {product.price}
+            <span>Нэмэх</span>
+            <span className="font-bold">{product.price}</span>
           </Button>
         </div>
       </div>
