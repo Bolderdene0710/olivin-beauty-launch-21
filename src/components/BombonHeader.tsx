@@ -7,7 +7,7 @@ const BombonHeader = () => {
       <div className="flex items-center justify-between">
         {/* Brand */}
         <Link to="/" className="font-display text-3xl md:text-4xl uppercase tracking-wider text-foreground">
-          BOMBON
+          OLIVIN
         </Link>
 
         {/* Center - Hamburger */}

@@ -48,7 +48,7 @@ const BombonHero = () => {
         <div className="relative w-48 h-64 md:w-64 md:h-80 rounded-3xl bg-gradient-to-b from-primary to-primary-dark shadow-2xl flex items-center justify-center transform rotate-[-5deg] hover:rotate-0 transition-transform duration-500">
           <div className="text-center px-4">
             <span className="font-display text-2xl md:text-3xl text-primary-foreground uppercase tracking-wider">
-              BOMBON
+              OLIVIN
             </span>
             <div className="mt-2 text-xs md:text-sm text-primary-foreground/80 font-medium">
               Royal Mix
