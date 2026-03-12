@@ -30,15 +30,15 @@ const BombonHero = () => {
       {/* Main Headline */}
       <div className="relative z-20 text-center max-w-6xl mx-auto pt-20">
         <h1 className="font-display text-[clamp(3rem,12vw,10rem)] leading-[0.9] uppercase text-foreground tracking-tight">
-          ROYAL SWEDISH
+          OLIVIN
         </h1>
         <h1 className="font-display text-[clamp(3rem,12vw,10rem)] leading-[0.9] uppercase text-foreground tracking-tight">
-          CANDY
+          BEAUTY
         </h1>
 
         <p className="mt-8 md:mt-12 text-base md:text-xl font-medium text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-          In the land of Bombon, flavor holds the crown. Experience the elegance
-          of Sweden in its sweetest form.
+          In the land of Olivin, beauty holds the crown. Experience the elegance
+          of Korean skincare in its purest form.
         </p>
       </div>
 
