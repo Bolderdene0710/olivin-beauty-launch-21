@@ -1,56 +1,59 @@
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
 @layer base {
   :root {
-    /* K-Beauty Brand Colors - Olivin Beauty */
-    --background: 0 0% 100%;
-    --foreground: 0 0% 20%;
+    /* BOMBON Royal Swedish Candy */
+    --background: 252 40% 95%;
+    --foreground: 260 10% 10%;
     
-    /* Mint Green Primary - Fresh Korean Aesthetic */
-    --primary: 159 70% 77%;
-    --primary-foreground: 0 0% 20%;
+    /* Royal Purple Primary */
+    --primary: 270 50% 55%;
+    --primary-foreground: 0 0% 100%;
     
-    /* Soft Mint Variations */
-    --primary-light: 159 70% 90%;
-    --primary-dark: 159 70% 60%;
+    --primary-light: 270 50% 75%;
+    --primary-dark: 270 55% 40%;
     
-    /* Card & Surface Colors */
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 20%;
+    /* Card & Surface */
+    --card: 252 35% 97%;
+    --card-foreground: 260 10% 10%;
     
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 20%;
+    --popover-foreground: 260 10% 10%;
     
-    /* Secondary - Light Grey */
-    --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 20%;
+    /* Secondary - Warm Lavender */
+    --secondary: 270 30% 90%;
+    --secondary-foreground: 260 10% 10%;
     
-    /* Muted - Subtle Grey */
-    --muted: 0 0% 95%;
-    --muted-foreground: 0 0% 45%;
+    /* Muted */
+    --muted: 252 25% 92%;
+    --muted-foreground: 260 10% 45%;
     
-    /* Accent - Softer Mint */
-    --accent: 159 60% 85%;
-    --accent-foreground: 0 0% 20%;
+    /* Accent - Candy Yellow-Green */
+    --accent: 80 60% 55%;
+    --accent-foreground: 0 0% 10%;
     
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
     
-    /* Borders - Light and Clean */
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 159 70% 77%;
+    /* Borders */
+    --border: 252 20% 88%;
+    --input: 252 20% 88%;
+    --ring: 270 50% 55%;
     
-    --radius: 0.75rem;
+    --radius: 1rem;
     
-    /* Transitions */
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Candy Colors */
+    --candy-pink: 340 80% 65%;
+    --candy-green: 140 60% 50%;
+    --candy-yellow: 45 95% 60%;
+    --candy-purple: 280 65% 55%;
+    --candy-orange: 25 90% 60%;
+    --candy-blue: 200 70% 55%;
+    --candy-red: 0 75% 55%;
   }
 }
 
@@ -61,5 +64,68 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
   }
+
+  .font-display {
+    font-family: 'Anton', sans-serif;
+  }
+}
+
+@layer utilities {
+  /* Floating candy animations */
+  @keyframes float-1 {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(5deg); }
+  }
+  @keyframes float-2 {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-30px) rotate(-8deg); }
+  }
+  @keyframes float-3 {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-15px) rotate(10deg); }
+  }
+  @keyframes float-4 {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-25px) rotate(-5deg); }
+  }
+  @keyframes float-5 {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-18px) rotate(7deg); }
+  }
+
+  @keyframes candy-enter-1 {
+    0% { opacity: 0; transform: translate(-100px, -80px) rotate(-45deg) scale(0.3); }
+    100% { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); }
+  }
+  @keyframes candy-enter-2 {
+    0% { opacity: 0; transform: translate(100px, -60px) rotate(45deg) scale(0.3); }
+    100% { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); }
+  }
+  @keyframes candy-enter-3 {
+    0% { opacity: 0; transform: translate(-80px, 100px) rotate(30deg) scale(0.3); }
+    100% { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); }
+  }
+  @keyframes candy-enter-4 {
+    0% { opacity: 0; transform: translate(120px, 80px) rotate(-60deg) scale(0.3); }
+    100% { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); }
+  }
+  @keyframes candy-enter-5 {
+    0% { opacity: 0; transform: translate(0, -120px) rotate(90deg) scale(0.3); }
+    100% { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); }
+  }
+
+  @keyframes fog-drift {
+    0%, 100% { transform: translateX(0); opacity: 0.6; }
+    50% { transform: translateX(30px); opacity: 0.8; }
+  }
+
+  .animate-float-1 { animation: candy-enter-1 0.8s ease-out forwards, float-1 4s ease-in-out 0.8s infinite; }
+  .animate-float-2 { animation: candy-enter-2 0.9s ease-out forwards, float-2 5s ease-in-out 0.9s infinite; }
+  .animate-float-3 { animation: candy-enter-3 1s ease-out forwards, float-3 3.5s ease-in-out 1s infinite; }
+  .animate-float-4 { animation: candy-enter-4 1.1s ease-out forwards, float-4 4.5s ease-in-out 1.1s infinite; }
+  .animate-float-5 { animation: candy-enter-5 1.2s ease-out forwards, float-5 5.5s ease-in-out 1.2s infinite; }
+
+  .animate-fog { animation: fog-drift 8s ease-in-out infinite; }
 }
