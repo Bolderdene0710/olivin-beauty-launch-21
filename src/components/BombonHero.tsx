@@ -30,15 +30,15 @@ const BombonHero = () => {
       {/* Main Headline */}
       <div className="relative z-20 text-center max-w-6xl mx-auto pt-20">
         <h1 className="font-display text-[clamp(3rem,12vw,10rem)] leading-[0.9] uppercase text-foreground tracking-tight">
-          ROYAL SWEDISH
+          OLIVIN
         </h1>
         <h1 className="font-display text-[clamp(3rem,12vw,10rem)] leading-[0.9] uppercase text-foreground tracking-tight">
-          CANDY
+          BEAUTY
         </h1>
 
         <p className="mt-8 md:mt-12 text-base md:text-xl font-medium text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-          In the land of Bombon, flavor holds the crown. Experience the elegance
-          of Sweden in its sweetest form.
+          In the land of Olivin, beauty holds the crown. Experience the elegance
+          of Korean skincare in its purest form.
         </p>
       </div>
 
@@ -48,7 +48,7 @@ const BombonHero = () => {
         <div className="relative w-48 h-64 md:w-64 md:h-80 rounded-3xl bg-gradient-to-b from-primary to-primary-dark shadow-2xl flex items-center justify-center transform rotate-[-5deg] hover:rotate-0 transition-transform duration-500">
           <div className="text-center px-4">
             <span className="font-display text-2xl md:text-3xl text-primary-foreground uppercase tracking-wider">
-              BOMBON
+              OLIVIN
             </span>
             <div className="mt-2 text-xs md:text-sm text-primary-foreground/80 font-medium">
               Royal Mix
