@@ -1,17 +1,11 @@
-import Header from "@/components/Header";
-import Hero from "@/components/Hero";
-import BestSellers from "@/components/BestSellers";
-import WhyUs from "@/components/WhyUs";
-import Footer from "@/components/Footer";
+import BombonHeader from "@/components/BombonHeader";
+import BombonHero from "@/components/BombonHero";
 
 const Index = () => {
   return (
-    <div className="min-h-screen">
-      <Header />
-      <Hero />
-      <BestSellers />
-      <WhyUs />
-      <Footer />
+    <div className="min-h-screen bg-background relative">
+      <BombonHeader />
+      <BombonHero />
     </div>
   );
 };
