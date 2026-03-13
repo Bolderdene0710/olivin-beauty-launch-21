@@ -9,8 +9,8 @@ export function useProducts() {
   return useQuery({
     queryKey: ["products"],
     queryFn: async (): Promise<Product[]> => {
-      const { data, error } = await supabase
-        .from("products" as "orders")
+      const { data, error } = await (supabase as any)
+        .from("products")
         .select("*");
 
       if (error) {
