@@ -1,221 +1,255 @@
 import { useState, useMemo } from "react";
+import { motion } from "framer-motion";
+import { Search } from "lucide-react";
 import { ProductCategory } from "@/types/product";
 import { useProducts } from "@/hooks/useProducts";
-import ProductCard from "@/components/ProductCard";
-import Header from "@/components/Header";
+import { useCart } from "@/contexts/CartContext";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import BombonHeader from "@/components/BombonHeader";
 import Footer from "@/components/Footer";
-import { Slider } from "@/components/ui/slider";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Filter } from "lucide-react";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { Badge } from "@/components/ui/badge";
 
-type SortOption = "price-low" | "price-high" | "newest" | "popular";
+type FilterPill = "All" | ProductCategory | "Vegan" | "Cruelty-Free";
+
+const filterPills: FilterPill[] = ["All", "Serums", "Toners", "Creams", "Cleansers", "Vegan", "Cruelty-Free"];
+
+const cardTags = ["VEGAN", "HYDRATING"];
+const btnColors = [
+  "bg-[hsl(70,90%,63%)]",
+  "bg-pastel-pink",
+  "bg-pastel-mint",
+  "bg-pastel-peach",
+  "bg-pastel-lilac",
+  "bg-pastel-yellow",
+];
 
 const Shop = () => {
   const { data: products = [], isLoading, error } = useProducts();
-  const [selectedCategories, setSelectedCategories] = useState<ProductCategory[]>([]);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000000]);
-  const [sortBy, setSortBy] = useState<SortOption>("popular");
+  const { addItem } = useCart();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
-  const categories: ProductCategory[] = ["Serums", "Toners", "Creams", "Cleansers"];
-  
-  const maxPrice = products.length > 0 ? Math.max(...products.map(p => p.priceNumber)) : 1000000;
-  const minPrice = products.length > 0 ? Math.min(...products.map(p => p.priceNumber)) : 0;
+  const initialCategory = searchParams.get("category") as FilterPill | null;
+  const [activeFilter, setActiveFilter] = useState<FilterPill>(initialCategory || "All");
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const toggleCategory = (category: ProductCategory) => {
-    setSelectedCategories(prev =>
-      prev.includes(category)
-        ? prev.filter(c => c !== category)
-        : [...prev, category]
-    );
-  };
+  const filteredProducts = useMemo(() => {
+    let filtered = products;
 
-  const clearFilters = () => {
-    setSelectedCategories([]);
-    setPriceRange([minPrice, maxPrice]);
-  };
-
-  const filteredAndSortedProducts = useMemo(() => {
-    let filtered = products.filter(product => {
-      const categoryMatch = selectedCategories.length === 0 || selectedCategories.includes(product.category);
-      const priceMatch = product.priceNumber >= priceRange[0] && product.priceNumber <= priceRange[1];
-      return categoryMatch && priceMatch;
-    });
-
-    // Sort products
-    const sorted = [...filtered];
-    switch (sortBy) {
-      case "price-low":
-        sorted.sort((a, b) => a.priceNumber - b.priceNumber);
-        break;
-      case "price-high":
-        sorted.sort((a, b) => b.priceNumber - a.priceNumber);
-        break;
-      case "newest":
-      case "popular":
-      default:
-        // Keep original order for popular items
-        break;
+    if (activeFilter !== "All" && activeFilter !== "Vegan" && activeFilter !== "Cruelty-Free") {
+      filtered = filtered.filter((p) => p.category === activeFilter);
     }
 
-    return sorted;
-  }, [products, selectedCategories, priceRange, sortBy]);
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (p) =>
+          p.name.toLowerCase().includes(q) ||
+          p.brand.toLowerCase().includes(q)
+      );
+    }
 
-  const FilterSidebar = () => (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Categories</h3>
-        <div className="space-y-2">
-          {categories.map(category => (
-            <Button
-              key={category}
-              variant={selectedCategories.includes(category) ? "default" : "outline"}
-              className="w-full justify-start"
-              onClick={() => toggleCategory(category)}
-            >
-              {category}
-            </Button>
-          ))}
-        </div>
-      </div>
-
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Price Range</h3>
-        <div className="px-2">
-          <Slider
-            value={priceRange}
-            onValueChange={(value) => setPriceRange(value as [number, number])}
-            max={maxPrice || 1000000}
-            min={minPrice || 0}
-            step={1000}
-            className="mb-4"
-          />
-          <div className="flex justify-between text-sm text-muted-foreground">
-            <span>{priceRange[0].toLocaleString()}₮</span>
-            <span>{priceRange[1].toLocaleString()}₮</span>
-          </div>
-        </div>
-      </div>
-
-      <Button variant="outline" className="w-full" onClick={clearFilters}>
-        Clear Filters
-      </Button>
-    </div>
-  );
-
-  const ProductsSkeleton = () => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      {[1, 2, 3, 4, 5, 6].map((i) => (
-        <div key={i} className="space-y-4">
-          <Skeleton className="aspect-square w-full rounded-lg" />
-          <Skeleton className="h-4 w-20" />
-          <Skeleton className="h-6 w-full" />
-          <Skeleton className="h-6 w-24" />
-        </div>
-      ))}
-    </div>
-  );
+    return filtered;
+  }, [products, activeFilter, searchQuery]);
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
-      
-      <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold mb-2">Shop All Products</h1>
-          <p className="text-muted-foreground">Discover our complete K-Beauty collection</p>
+    <div className="min-h-screen bg-background">
+      <BombonHeader />
+
+      {/* Hero / Search Section */}
+      <section className="relative pt-28 pb-16 px-4 overflow-hidden">
+        {/* Pastel gradient bg */}
+        <div className="absolute inset-0 bg-gradient-to-b from-pastel-lilac/40 via-pastel-peach/20 to-background" />
+
+        {/* Floating shapes */}
+        <motion.div
+          className="absolute top-16 left-[8%] w-20 h-20 rounded-full bg-pastel-pink/30 backdrop-blur-sm"
+          animate={{ y: [0, -15, 0] }}
+          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute top-24 right-[12%] w-14 h-14 rounded-full bg-pastel-mint/30 backdrop-blur-sm"
+          animate={{ y: [0, -20, 0] }}
+          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+        />
+        <motion.div
+          className="absolute bottom-8 left-[20%] w-10 h-10 rounded-full bg-pastel-yellow/30 backdrop-blur-sm"
+          animate={{ y: [0, -10, 0] }}
+          transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+        />
+
+        <div className="relative z-10 max-w-3xl mx-auto">
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="font-display text-4xl md:text-6xl uppercase text-center text-foreground mb-8"
+          >
+            БҮТЭЭГДЭХҮҮН
+          </motion.h1>
+
+          {/* Search bar */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.15 }}
+            className="flex gap-3 max-w-xl mx-auto"
+          >
+            <div className="flex-1 relative">
+              <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Хайх..."
+                className="w-full pl-13 pr-5 py-4 rounded-full bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary shadow-sm text-base"
+                style={{ paddingLeft: "3rem" }}
+              />
+            </div>
+            <button className="px-8 py-4 rounded-full bg-[hsl(70,90%,63%)] font-display text-sm uppercase tracking-wider text-foreground hover:brightness-95 transition-all shadow-md">
+              ХАЙХ
+            </button>
+          </motion.div>
+
+          {/* Filter pills */}
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="flex flex-wrap justify-center gap-3 mt-8"
+          >
+            {filterPills.map((pill) => (
+              <button
+                key={pill}
+                onClick={() => setActiveFilter(pill)}
+                className={`px-5 py-2.5 rounded-full text-sm font-semibold uppercase tracking-wide transition-all duration-200 ${
+                  activeFilter === pill
+                    ? "bg-foreground text-background shadow-md"
+                    : "bg-card text-foreground border border-border shadow-sm hover:shadow-md"
+                }`}
+              >
+                {pill}
+              </button>
+            ))}
+          </motion.div>
         </div>
+      </section>
 
-        <div className="flex gap-8">
-          {/* Desktop Sidebar */}
-          <aside className="hidden lg:block w-64 shrink-0">
-            <div className="sticky top-4">
-              <FilterSidebar />
-            </div>
-          </aside>
+      {/* Products Grid */}
+      <main className="px-4 pb-20">
+        <div className="max-w-6xl mx-auto">
+          <p className="text-muted-foreground mb-8 text-center">
+            {isLoading
+              ? "Ачааллаж байна..."
+              : `${filteredProducts.length} бүтээгдэхүүн`}
+          </p>
 
-          {/* Mobile Filter Button */}
-          <div className="lg:hidden fixed bottom-4 right-4 z-50">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button size="lg" className="rounded-full shadow-lg">
-                  <Filter className="mr-2 h-5 w-5" />
-                  Filters
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-80">
-                <SheetHeader>
-                  <SheetTitle>Filters</SheetTitle>
-                </SheetHeader>
-                <div className="mt-6">
-                  <FilterSidebar />
+          {isLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="rounded-[32px] overflow-hidden bg-card">
+                  <Skeleton className="aspect-square w-full" />
+                  <div className="p-6 space-y-3">
+                    <Skeleton className="h-6 w-3/4" />
+                    <Skeleton className="h-5 w-1/2" />
+                    <Skeleton className="h-14 w-full rounded-full" />
+                  </div>
                 </div>
-              </SheetContent>
-            </Sheet>
-          </div>
-
-          {/* Products Grid */}
-          <div className="flex-1">
-            <div className="flex justify-between items-center mb-6">
-              <p className="text-muted-foreground">
-                {isLoading ? "Loading..." : `${filteredAndSortedProducts.length} ${filteredAndSortedProducts.length === 1 ? 'product' : 'products'}`}
-              </p>
-              
-              <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
-                <SelectTrigger className="w-[200px] bg-background">
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent className="bg-background z-50">
-                  <SelectItem value="popular">Most Popular</SelectItem>
-                  <SelectItem value="newest">Newest</SelectItem>
-                  <SelectItem value="price-low">Price: Low to High</SelectItem>
-                  <SelectItem value="price-high">Price: High to Low</SelectItem>
-                </SelectContent>
-              </Select>
+              ))}
             </div>
+          ) : error ? (
+            <div className="text-center py-16 text-muted-foreground">
+              Бүтээгдэхүүн ачааллахад алдаа гарлаа.
+            </div>
+          ) : filteredProducts.length === 0 ? (
+            <div className="text-center py-16 text-muted-foreground">
+              Бүтээгдэхүүн олдсонгүй.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredProducts.map((product, i) => (
+                <motion.div
+                  key={product.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: (i % 6) * 0.08 }}
+                  className="rounded-[32px] overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col"
+                >
+                  {/* Top half - white bg with image */}
+                  <div
+                    className="bg-card relative p-6 cursor-pointer"
+                    onClick={() => navigate(`/product/${product.id}`)}
+                  >
+                    {/* Tags */}
+                    <div className="flex gap-2 mb-3">
+                      {cardTags.map((tag) => (
+                        <Badge
+                          key={tag}
+                          className="rounded-full text-[10px] font-bold uppercase tracking-wider px-3 py-1 bg-pastel-mint/60 text-foreground border-0"
+                        >
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
 
-            {isLoading ? (
-              <ProductsSkeleton />
-            ) : error ? (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground">Failed to load products. Please try again later.</p>
-              </div>
-            ) : filteredAndSortedProducts.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground">No products found matching your filters.</p>
-                <Button variant="outline" className="mt-4" onClick={clearFilters}>
-                  Clear Filters
-                </Button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredAndSortedProducts.map(product => (
-                  <ProductCard
-                    key={product.id}
-                    id={product.id}
-                    image={product.image}
-                    name={product.name}
-                    brand={product.brand}
-                    price={product.price}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
+                    <div className="aspect-square flex items-center justify-center">
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="w-full h-full object-cover rounded-2xl hover:scale-105 transition-transform duration-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Bottom half - pastel bg */}
+                  <div className="bg-pastel-lilac/30 p-6 flex flex-col flex-1">
+                    <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">
+                      {product.brand}
+                    </p>
+                    <h3
+                      className="font-bold text-lg text-foreground line-clamp-2 cursor-pointer hover:text-primary transition-colors"
+                      onClick={() => navigate(`/product/${product.id}`)}
+                    >
+                      {product.name}
+                    </h3>
+
+                    {/* Price & volume */}
+                    <div className="flex items-center justify-between mt-3 mb-4">
+                      <span className="text-xl font-bold text-foreground">
+                        {product.price}
+                      </span>
+                      <span className="text-sm text-muted-foreground font-medium">
+                        50ml
+                      </span>
+                    </div>
+
+                    {/* CTA */}
+                    <button
+                      onClick={() => {
+                        addItem({
+                          id: product.id,
+                          name: product.name,
+                          price: product.price,
+                          image: product.image,
+                        });
+                        toast({
+                          title: "Сагсанд нэмлээ!",
+                          description: product.name,
+                        });
+                      }}
+                      className={`w-full py-4 rounded-full font-display text-sm uppercase tracking-wider text-foreground ${btnColors[i % btnColors.length]} hover:brightness-95 transition-all shadow-sm hover:shadow-md mt-auto`}
+                    >
+                      САГСАНД НЭМЭХ +
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
         </div>
       </main>
 

@@ -9,8 +9,8 @@ export function useProducts() {
   return useQuery({
     queryKey: ["products"],
     queryFn: async (): Promise<Product[]> => {
-      const { data, error } = await supabase
-        .from("products" as "orders")
+      const { data, error } = await (supabase as any)
+        .from("products")
         .select("*");
 
       if (error) {
@@ -31,8 +31,8 @@ export function useProductById(id: string) {
   return useQuery({
     queryKey: ["product", id],
     queryFn: async (): Promise<Product | null> => {
-      const { data, error } = await supabase
-        .from("products" as "orders")
+      const { data, error } = await (supabase as any)
+        .from("products")
         .select("*")
         .eq("id", id)
         .maybeSingle();
@@ -57,8 +57,8 @@ export function useProductsByCategory(category: ProductCategory | "All") {
     queryKey: ["products", "category", category],
     queryFn: async (): Promise<Product[]> => {
       // Fetch all and filter client-side to avoid TypeScript complexity
-      const { data, error } = await supabase
-        .from("products" as "orders")
+      const { data, error } = await (supabase as any)
+        .from("products")
         .select("*");
 
       if (error) {
