@@ -31,8 +31,8 @@ export function useProductById(id: string) {
   return useQuery({
     queryKey: ["product", id],
     queryFn: async (): Promise<Product | null> => {
-      const { data, error } = await supabase
-        .from("products" as "orders")
+      const { data, error } = await (supabase as any)
+        .from("products")
         .select("*")
         .eq("id", id)
         .maybeSingle();
