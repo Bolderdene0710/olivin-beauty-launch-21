@@ -57,8 +57,8 @@ export function useProductsByCategory(category: ProductCategory | "All") {
     queryKey: ["products", "category", category],
     queryFn: async (): Promise<Product[]> => {
       // Fetch all and filter client-side to avoid TypeScript complexity
-      const { data, error } = await supabase
-        .from("products" as "orders")
+      const { data, error } = await (supabase as any)
+        .from("products")
         .select("*");
 
       if (error) {
