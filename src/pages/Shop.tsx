@@ -6,7 +6,7 @@ import { useProducts } from "@/hooks/useProducts";
 import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import BombonHeader from "@/components/BombonHeader";
+import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -57,7 +57,7 @@ const Shop = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <BombonHeader />
+      <Header />
 
       {/* Hero / Search Section */}
       <section className="relative pt-28 pb-16 px-4 overflow-hidden">

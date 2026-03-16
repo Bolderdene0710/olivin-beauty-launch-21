@@ -1,4 +1,4 @@
-import BombonHeader from "@/components/BombonHeader";
+import Header from "@/components/Header";
 import HeroSection from "@/components/home/HeroSection";
 import StorySection from "@/components/home/StorySection";
 import CategoriesSection from "@/components/home/CategoriesSection";
@@ -10,7 +10,7 @@ import Footer from "@/components/Footer";
 const Index = () => {
   return (
     <div className="min-h-screen bg-background relative">
-      <BombonHeader />
+      <Header />
       <HeroSection />
       <StorySection />
       <CategoriesSection />
