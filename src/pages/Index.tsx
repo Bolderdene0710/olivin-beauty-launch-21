@@ -1,4 +1,4 @@
-import BombonHeader from "@/components/BombonHeader";
+import Header from "@/components/Header";
 import HeroSection from "@/components/home/HeroSection";
 import StorySection from "@/components/home/StorySection";
 import CategoriesSection from "@/components/home/CategoriesSection";
