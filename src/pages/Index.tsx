@@ -8,6 +8,7 @@ import NewsletterSection from "@/components/home/NewsletterSection";
 import Footer from "@/components/Footer";
 
 const Index = () => {
+  // unified header
   return (
     <div className="min-h-screen bg-background relative">
       <Header />
