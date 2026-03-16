@@ -57,7 +57,7 @@ const Shop = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <BombonHeader />
+      <Header />
 
       {/* Hero / Search Section */}
       <section className="relative pt-28 pb-16 px-4 overflow-hidden">
