@@ -1,4 +1,5 @@
 import { Search, Heart, User, Menu, X, ShoppingBag } from "lucide-react";
+import olivinLogo from "@/assets/olivin-logo.png";
 import { NavLink } from "@/components/NavLink";
 import { useState, useEffect } from "react";
 import { useCart } from "@/contexts/CartContext";
@@ -43,13 +44,8 @@ const Header = () => {
       <div className="max-w-7xl mx-auto px-4 md:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <NavLink to="/" className="flex flex-col leading-none group">
-            <span className="text-[10px] font-light tracking-[0.3em] uppercase text-muted-foreground">
-              OLIVIN
-            </span>
-            <span className="text-xl font-semibold tracking-wider text-foreground">
-              OLIVIN.
-            </span>
+          <NavLink to="/" className="flex items-center">
+            <img src={olivinLogo} alt="Olivin" className="h-9 md:h-12 w-auto" />
           </NavLink>
 
           {/* Center Nav - Desktop */}

@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Instagram, Facebook, Youtube } from "lucide-react";
+import olivinLogo from "@/assets/olivin-logo.png";
 
 const Footer = () => {
   return (
@@ -9,7 +10,7 @@ const Footer = () => {
           {/* Logo */}
           <div className="col-span-2 md:col-span-1">
             <Link to="/" className="inline-block">
-              <span className="text-xl font-semibold tracking-wider text-foreground">OLIVIN.</span>
+              <img src={olivinLogo} alt="Olivin" className="h-9 md:h-10 w-auto" />
             </Link>
             <p className="text-xs text-muted-foreground mt-3 leading-relaxed max-w-[200px]">
               Солонгосын гоо сайхны бүтээгдэхүүнийг албан ёсны эрхтэйгээр хүргэж байна.
