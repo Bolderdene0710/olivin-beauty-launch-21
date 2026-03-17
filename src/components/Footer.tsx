@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Instagram, Facebook, Youtube } from "lucide-react";
+import olivinLogo from "@/assets/olivin-logo.png";
 
 const Footer = () => {
   return (
