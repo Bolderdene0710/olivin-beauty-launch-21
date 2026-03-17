@@ -1,4 +1,5 @@
 import { Search, Heart, User, Menu, X, ShoppingBag } from "lucide-react";
+import olivinLogo from "@/assets/olivin-logo.png";
 import { NavLink } from "@/components/NavLink";
 import { useState, useEffect } from "react";
 import { useCart } from "@/contexts/CartContext";
