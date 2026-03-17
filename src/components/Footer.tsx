@@ -1,156 +1,83 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Phone, Mail, MapPin, Instagram, Facebook } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
+import { Instagram, Facebook, Youtube } from "lucide-react";
 
 const Footer = () => {
-  const [email, setEmail] = useState("");
-  const { toast } = useToast();
-
-  const handleSubscribe = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.trim()) return;
-    
-    toast({
-      title: "Бүртгэгдлээ!",
-      description: "Мэдээлэл авах жагсаалтад нэмэгдлээ.",
-    });
-    setEmail("");
-  };
-
   return (
-    <footer className="bg-secondary/50 border-t border-border">
-      <div className="container mx-auto px-4 py-12 md:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8">
-          {/* Column 1: Brand Info */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-bold uppercase tracking-wide text-foreground">
-              Olivin Beauty
-            </h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Бид танд Солонгосын хамгийн шилдэг, чанартай гоо сайхны бүтээгдэхүүнийг албан ёсны эрхтэйгээр хүргэж байна.
+    <footer className="bg-background border-t border-border">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-14">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
+          {/* Logo */}
+          <div className="col-span-2 md:col-span-1">
+            <Link to="/" className="inline-block">
+              <span className="text-xl font-semibold tracking-wider text-foreground">OLIVIN.</span>
+            </Link>
+            <p className="text-xs text-muted-foreground mt-3 leading-relaxed max-w-[200px]">
+              Солонгосын гоо сайхны бүтээгдэхүүнийг албан ёсны эрхтэйгээр хүргэж байна.
             </p>
-            <div className="flex flex-col space-y-2 pt-2">
-              <Link
-                to="/about"
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Бидний тухай
-              </Link>
-              <Link
-                to="/shop"
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Брэндүүд
-              </Link>
+          </div>
+
+          {/* Products */}
+          <div>
+            <h4 className="text-xs font-medium tracking-[0.15em] uppercase text-foreground mb-4">
+              Бүтээгдэхүүн
+            </h4>
+            <div className="flex flex-col gap-2">
+              <Link to="/shop?filter=new" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Шинэ</Link>
+              <Link to="/shop" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Каталог</Link>
+              <Link to="/track-order" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Хүргэлт</Link>
             </div>
           </div>
 
-          {/* Column 2: Help */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-bold uppercase tracking-wide text-foreground">
+          {/* Company */}
+          <div>
+            <h4 className="text-xs font-medium tracking-[0.15em] uppercase text-foreground mb-4">
+              Компани
+            </h4>
+            <div className="flex flex-col gap-2">
+              <Link to="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Бидний тухай</Link>
+              <Link to="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Төлбөр</Link>
+              <Link to="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Урамшуулал</Link>
+            </div>
+          </div>
+
+          {/* Customer care */}
+          <div>
+            <h4 className="text-xs font-medium tracking-[0.15em] uppercase text-foreground mb-4">
               Тусламж
-            </h3>
-            <div className="flex flex-col space-y-2">
-              <Link
-                to="/faq"
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Түгээмэл асуулт
-              </Link>
-              <Link
-                to="/delivery"
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Хүргэлтийн нөхцөл
-              </Link>
-              <Link
-                to="/returns"
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Буцаах журам
-              </Link>
-              <Link
-                to="/privacy"
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Нууцлалын бодлого
-              </Link>
+            </h4>
+            <div className="flex flex-col gap-2">
+              <Link to="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Холбоо барих</Link>
+              <Link to="/faq" className="text-sm text-muted-foreground hover:text-foreground transition-colors">FAQ</Link>
+              <Link to="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Буцаалт</Link>
+              <Link to="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Нууцлал</Link>
             </div>
           </div>
 
-          {/* Column 3: Contact */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-bold uppercase tracking-wide text-foreground">
-              Холбоо барих
-            </h3>
-            <div className="flex flex-col space-y-3">
-              <div className="flex items-center gap-3">
-                <Phone className="h-4 w-4 text-primary" />
-                <span className="text-sm text-muted-foreground">7700-8686</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Mail className="h-4 w-4 text-primary" />
-                <span className="text-sm text-muted-foreground">info@olivin.mn</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <MapPin className="h-4 w-4 text-primary mt-0.5" />
-                <span className="text-sm text-muted-foreground">
-                  Улаанбаатар хот, Сүхбаатар дүүрэг, Parkside
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Column 4: Newsletter */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-bold uppercase tracking-wide text-foreground">
-              Мэдээлэл авах
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              Шинэ бүтээгдэхүүн, хямдралын мэдээллийг цаг алдалгүй аваарай.
-            </p>
-            <form onSubmit={handleSubscribe} className="flex gap-2">
-              <Input
-                type="email"
-                placeholder="И-мэйл хаяг"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="h-10 text-sm bg-background"
-              />
-              <Button type="submit" size="sm" className="h-10 px-4">
-                Бүртгүүлэх
-              </Button>
-            </form>
-            <div className="flex items-center gap-4 pt-2">
-              <a
-                href="https://instagram.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-primary transition-colors"
-              >
-                <Instagram className="h-5 w-5" />
+          {/* Socials */}
+          <div>
+            <h4 className="text-xs font-medium tracking-[0.15em] uppercase text-foreground mb-4">
+              Сошиал
+            </h4>
+            <div className="flex items-center gap-3">
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Instagram className="w-4 h-4 stroke-[1.5]" />
               </a>
-              <a
-                href="https://facebook.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-primary transition-colors"
-              >
-                <Facebook className="h-5 w-5" />
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Facebook className="w-4 h-4 stroke-[1.5]" />
+              </a>
+              <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Youtube className="w-4 h-4 stroke-[1.5]" />
               </a>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Copyright */}
+      {/* Bottom */}
       <div className="border-t border-border">
-        <div className="container mx-auto px-4 py-4">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 py-4">
           <p className="text-xs text-muted-foreground text-center">
-            © 2025 Olivin Beauty. Бүх эрх хуулиар хамгаалагдсан.
+            © 2025 OLIVIN. Бүх эрх хуулиар хамгаалагдсан.
           </p>
         </div>
       </div>

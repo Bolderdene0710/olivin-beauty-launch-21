@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,700;1,300;1,400&family=Jost:wght@200;300;400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,55 +6,50 @@
 
 @layer base {
   :root {
-    /* Olivin K-Beauty Dreamy Pastels */
-    --background: 270 30% 97%;
-    --foreground: 260 20% 10%;
-    
-    /* Primary - Soft Lilac */
-    --primary: 270 45% 60%;
+    /* Clean Botanical Palette */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 8%;
+
+    /* Primary - Sage Green */
+    --primary: 100 18% 52%;
     --primary-foreground: 0 0% 100%;
-    
-    --primary-light: 270 40% 80%;
-    --primary-dark: 270 50% 45%;
-    
+    --primary-light: 100 22% 72%;
+    --primary-dark: 100 22% 38%;
+
     /* Card & Surface */
     --card: 0 0% 100%;
-    --card-foreground: 260 20% 10%;
-    
+    --card-foreground: 0 0% 8%;
     --popover: 0 0% 100%;
-    --popover-foreground: 260 20% 10%;
-    
-    /* Secondary - Peach */
-    --secondary: 20 60% 92%;
-    --secondary-foreground: 260 20% 10%;
-    
+    --popover-foreground: 0 0% 8%;
+
+    /* Secondary - Light Gray */
+    --secondary: 40 7% 95%;
+    --secondary-foreground: 0 0% 8%;
+
     /* Muted */
-    --muted: 270 20% 94%;
-    --muted-foreground: 260 10% 45%;
-    
-    /* Accent - Mint Green */
-    --accent: 160 50% 55%;
+    --muted: 40 7% 95%;
+    --muted-foreground: 0 0% 45%;
+
+    /* Accent - Sage Green */
+    --accent: 100 18% 52%;
     --accent-foreground: 0 0% 100%;
-    
-    --destructive: 0 84.2% 60.2%;
+
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    
+
     /* Borders */
-    --border: 270 15% 90%;
-    --input: 270 15% 90%;
-    --ring: 270 45% 60%;
-    
-    --radius: 1rem;
-    
-    /* K-Beauty Pastels */
-    --pastel-pink: 340 60% 82%;
-    --pastel-peach: 20 70% 85%;
-    --pastel-mint: 160 45% 78%;
-    --pastel-lilac: 270 40% 82%;
-    --pastel-yellow: 45 80% 82%;
-    --pastel-blue: 200 55% 82%;
-    --pastel-rose: 350 50% 75%;
-    --pastel-lime: 90 50% 72%;
+    --border: 40 6% 88%;
+    --input: 40 6% 88%;
+    --ring: 100 18% 52%;
+
+    --radius: 0.5rem;
+
+    /* Botanical colors */
+    --sage: 100 18% 52%;
+    --sage-light: 100 22% 72%;
+    --sage-dark: 100 22% 38%;
+    --warm-gray: 40 7% 95%;
+    --circle-border: 35 8% 82%;
   }
 }
 
@@ -62,88 +57,54 @@
   * {
     @apply border-border;
   }
-
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Jost', sans-serif;
   }
-
-  .font-display {
-    font-family: 'Anton', sans-serif;
+  .font-serif-display {
+    font-family: 'Cormorant Garamond', serif;
+  }
+  .font-body {
+    font-family: 'Jost', sans-serif;
   }
 }
 
 @layer utilities {
-  /* Floating candy animations */
-  @keyframes float-1 {
-    0%, 100% { transform: translateY(0px) rotate(0deg); }
-    50% { transform: translateY(-20px) rotate(5deg); }
+  /* Botanical sway animations */
+  @keyframes sway-slow {
+    0%, 100% { transform: rotate(-2deg); }
+    50% { transform: rotate(2deg); }
   }
-  @keyframes float-2 {
-    0%, 100% { transform: translateY(0px) rotate(0deg); }
-    50% { transform: translateY(-30px) rotate(-8deg); }
+  @keyframes sway-medium {
+    0%, 100% { transform: rotate(-3deg); }
+    50% { transform: rotate(3deg); }
   }
-  @keyframes float-3 {
-    0%, 100% { transform: translateY(0px) rotate(0deg); }
-    50% { transform: translateY(-15px) rotate(10deg); }
-  }
-  @keyframes float-4 {
-    0%, 100% { transform: translateY(0px) rotate(0deg); }
-    50% { transform: translateY(-25px) rotate(-5deg); }
-  }
-  @keyframes float-5 {
-    0%, 100% { transform: translateY(0px) rotate(0deg); }
-    50% { transform: translateY(-18px) rotate(7deg); }
+  @keyframes sway-fast {
+    0%, 100% { transform: rotate(-1.5deg); }
+    50% { transform: rotate(1.5deg); }
   }
 
-  @keyframes candy-enter-1 {
-    0% { opacity: 0; transform: translate(-100px, -80px) rotate(-45deg) scale(0.3); }
-    100% { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); }
-  }
-  @keyframes candy-enter-2 {
-    0% { opacity: 0; transform: translate(100px, -60px) rotate(45deg) scale(0.3); }
-    100% { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); }
-  }
-  @keyframes candy-enter-3 {
-    0% { opacity: 0; transform: translate(-80px, 100px) rotate(30deg) scale(0.3); }
-    100% { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); }
-  }
-  @keyframes candy-enter-4 {
-    0% { opacity: 0; transform: translate(120px, 80px) rotate(-60deg) scale(0.3); }
-    100% { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); }
-  }
-  @keyframes candy-enter-5 {
-    0% { opacity: 0; transform: translate(0, -120px) rotate(90deg) scale(0.3); }
-    100% { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); }
-  }
+  .animate-sway-6 { animation: sway-slow 6s ease-in-out infinite; transform-origin: bottom center; }
+  .animate-sway-8 { animation: sway-medium 8s ease-in-out infinite; transform-origin: bottom center; }
+  .animate-sway-10 { animation: sway-slow 10s ease-in-out infinite; transform-origin: bottom center; }
+  .animate-sway-13 { animation: sway-fast 13s ease-in-out infinite; transform-origin: bottom center; }
 
-  @keyframes fog-drift {
-    0%, 100% { transform: translateX(0); opacity: 0.6; }
-    50% { transform: translateX(30px); opacity: 0.8; }
+  /* Hollow circle float */
+  @keyframes circle-float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-12px); }
   }
+  .animate-circle-float { animation: circle-float 6s ease-in-out infinite; }
+  .animate-circle-float-slow { animation: circle-float 9s ease-in-out infinite; }
+  .animate-circle-float-fast { animation: circle-float 4s ease-in-out infinite; }
 
-  .animate-float-1 { animation: candy-enter-1 0.8s ease-out forwards, float-1 4s ease-in-out 0.8s infinite; }
-  .animate-float-2 { animation: candy-enter-2 0.9s ease-out forwards, float-2 5s ease-in-out 0.9s infinite; }
-  .animate-float-3 { animation: candy-enter-3 1s ease-out forwards, float-3 3.5s ease-in-out 1s infinite; }
-  .animate-float-4 { animation: candy-enter-4 1.1s ease-out forwards, float-4 4.5s ease-in-out 1.1s infinite; }
-  .animate-float-5 { animation: candy-enter-5 1.2s ease-out forwards, float-5 5.5s ease-in-out 1.2s infinite; }
-
-  .animate-fog { animation: fog-drift 8s ease-in-out infinite; }
-
-  /* Slow floating blob animation */
-  @keyframes blob-float {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    33% { transform: translate(30px, -20px) scale(1.05); }
-    66% { transform: translate(-20px, 15px) scale(0.95); }
+  /* Fade in up */
+  @keyframes fade-up {
+    0% { opacity: 0; transform: translateY(30px); }
+    100% { opacity: 1; transform: translateY(0); }
   }
-  .animate-blob { animation: blob-float 12s ease-in-out infinite; }
-  .animation-delay-2000 { animation-delay: 2s; }
-  .animation-delay-4000 { animation-delay: 4s; }
-
-  /* Pulse glow for CTA */
-  @keyframes pulse-glow {
-    0%, 100% { box-shadow: 0 0 20px hsl(var(--pastel-lime) / 0.3); }
-    50% { box-shadow: 0 0 40px hsl(var(--pastel-lime) / 0.6), 0 0 60px hsl(var(--pastel-lime) / 0.2); }
-  }
-  .animate-pulse-glow { animation: pulse-glow 2.5s ease-in-out infinite; }
+  .animate-fade-up { animation: fade-up 0.8s ease-out forwards; }
+  .animate-fade-up-delay-1 { animation: fade-up 0.8s ease-out 0.15s forwards; opacity: 0; }
+  .animate-fade-up-delay-2 { animation: fade-up 0.8s ease-out 0.3s forwards; opacity: 0; }
+  .animate-fade-up-delay-3 { animation: fade-up 0.8s ease-out 0.45s forwards; opacity: 0; }
 }

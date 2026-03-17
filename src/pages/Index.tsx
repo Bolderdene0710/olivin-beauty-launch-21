@@ -1,23 +1,18 @@
 import Header from "@/components/Header";
 import HeroSection from "@/components/home/HeroSection";
-import StorySection from "@/components/home/StorySection";
-import CategoriesSection from "@/components/home/CategoriesSection";
 import BestsellersSection from "@/components/home/BestsellersSection";
-import TestimonialsSection from "@/components/home/TestimonialsSection";
-import NewsletterSection from "@/components/home/NewsletterSection";
+import ValuesSection from "@/components/home/ValuesSection";
+import EmailSignupSection from "@/components/home/EmailSignupSection";
 import Footer from "@/components/Footer";
 
 const Index = () => {
-  // unified header
   return (
-    <div className="min-h-screen bg-background relative">
+    <div className="min-h-screen bg-background">
       <Header />
       <HeroSection />
-      <StorySection />
-      <CategoriesSection />
       <BestsellersSection />
-      <TestimonialsSection />
-      <NewsletterSection />
+      <ValuesSection />
+      <EmailSignupSection />
       <Footer />
     </div>
   );

@@ -1,62 +1,89 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import FloatingShapes from "./FloatingShapes";
+import HollowCircle from "@/components/botanicals/HollowCircles";
 
 const HeroSection = () => {
   return (
-    <section className="relative min-h-screen overflow-hidden flex items-center justify-center">
-      {/* Dreamy gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-pastel-lilac via-pastel-peach/40 to-pastel-mint/30" />
+    <section className="relative min-h-[85vh] flex items-stretch overflow-hidden">
+      {/* Left: Text */}
+      <div className="relative flex-1 flex items-center px-8 md:px-16 lg:px-24 py-20 bg-background">
+        {/* Decorative circles */}
+        <HollowCircle size={140} className="absolute top-16 right-12 hidden md:block" speed="slow" />
+        <HollowCircle size={60} className="absolute bottom-32 right-24 hidden md:block" speed="fast" />
+        <HollowCircle size={80} className="absolute top-1/2 right-4 hidden md:block" speed="normal" />
 
-      {/* Slow floating blobs */}
-      <div className="absolute top-[10%] left-[5%] w-96 h-96 bg-pastel-pink/30 rounded-full blur-[120px] animate-blob" />
-      <div className="absolute bottom-[20%] right-[10%] w-80 h-80 bg-pastel-mint/40 rounded-full blur-[100px] animate-blob animation-delay-2000" />
-      <div className="absolute top-[40%] right-[30%] w-64 h-64 bg-pastel-yellow/30 rounded-full blur-[80px] animate-blob animation-delay-4000" />
-
-      <FloatingShapes />
-
-      <div className="relative z-10 text-center px-4 max-w-5xl mx-auto">
-        <motion.h1
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-          className="font-display text-[clamp(2.5rem,10vw,8rem)] leading-[0.95] uppercase text-foreground tracking-tight"
-        >
-          OLIVIN K-BEAUTY
-        </motion.h1>
-        <motion.h1
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
-          className="font-display text-[clamp(2.5rem,10vw,8rem)] leading-[0.95] uppercase text-foreground tracking-tight"
-        >
-          WONDERLAND
-        </motion.h1>
-
-        <motion.p
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-6 md:mt-10 text-lg md:text-xl text-muted-foreground max-w-xl mx-auto font-medium"
-        >
-          OLIVIN ГОО САЙХНЫ ЕРТӨНЦ
-        </motion.p>
-
-        {/* Floating badge with pulse glow */}
-        <motion.div
-          initial={{ scale: 0, rotate: -20 }}
-          animate={{ scale: 1, rotate: 12 }}
-          transition={{ duration: 0.6, delay: 0.6, type: "spring", stiffness: 200 }}
-          className="absolute -right-4 md:right-[5%] top-[10%] md:top-[15%]"
-        >
-          <Link
-            to="/shop"
-            className="w-28 h-28 md:w-36 md:h-36 rounded-full bg-pastel-lime flex items-center justify-center shadow-xl cursor-pointer block transition-transform duration-300 hover:scale-110 animate-pulse-glow"
+        <div className="max-w-lg relative z-10">
+          <motion.span
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7 }}
+            className="font-serif-display text-4xl md:text-5xl font-light text-muted-foreground italic"
           >
-            <span className="font-display text-sm md:text-base text-foreground uppercase text-center leading-tight">
-              SHOP<br />NOW ✨
-            </span>
-          </Link>
+            The
+          </motion.span>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.1 }}
+            className="text-7xl md:text-8xl lg:text-9xl font-semibold tracking-tight text-foreground leading-[0.9] mt-1"
+          >
+            OLIVIN.
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.25 }}
+            className="font-serif-display text-xl md:text-2xl text-muted-foreground mt-6 font-light"
+          >
+            Солонгосын Гоо Сайхны Ертөнц
+          </motion.p>
+
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="text-sm text-muted-foreground mt-4 leading-relaxed max-w-sm"
+          >
+            Байгалийн гаралтай, тансаг чанартай K-Beauty бүтээгдэхүүнүүд таны арьсыг гэрэлтүүлнэ. Зөвхөн албан ёсны эрхтэй бүтээгдэхүүнүүд.
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.55 }}
+          >
+            <Link
+              to="/shop"
+              className="inline-block mt-8 px-8 py-3 border border-foreground text-foreground text-sm tracking-[0.15em] uppercase hover:bg-foreground hover:text-background transition-colors duration-300"
+            >
+              Дэлгэрэнгүй
+            </Link>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Right: Product Image */}
+      <div className="hidden md:flex flex-1 items-center justify-center bg-secondary relative">
+        <HollowCircle size={200} className="absolute top-20 left-10" speed="slow" />
+        <HollowCircle size={50} className="absolute bottom-24 right-16" speed="fast" />
+
+        {/* Product display pedestal */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, delay: 0.3 }}
+          className="relative z-10 flex flex-col items-center"
+        >
+          <div className="w-64 h-64 lg:w-80 lg:h-80 rounded-full bg-background shadow-lg flex items-center justify-center">
+            <img
+              src="/placeholder.svg"
+              alt="Featured product"
+              className="w-3/4 h-3/4 object-contain"
+            />
+          </div>
+          <div className="w-72 lg:w-88 h-4 bg-background/60 rounded-full blur-md mt-4" />
         </motion.div>
       </div>
     </section>
