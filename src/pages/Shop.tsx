@@ -3,17 +3,15 @@ import { motion } from "framer-motion";
 import { Search } from "lucide-react";
 import { ProductCategory } from "@/types/product";
 import { useProducts } from "@/hooks/useProducts";
+import { useCategories } from "@/hooks/useCategories";
 import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
+import AnnouncementBar from "@/components/AnnouncementBar";
 import Footer from "@/components/Footer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-
-type FilterPill = "All" | ProductCategory | "Vegan" | "Cruelty-Free";
-
-const filterPills: FilterPill[] = ["All", "Serums", "Toners", "Creams", "Cleansers", "Vegan", "Cruelty-Free"];
 
 const cardTags = ["VEGAN", "HYDRATING"];
 const btnColors = [
