@@ -13,7 +13,6 @@ import Footer from "@/components/Footer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 
-const cardTags = ["VEGAN", "HYDRATING"];
 const btnColors = [
   "bg-[hsl(70,90%,63%)]",
   "bg-pastel-pink",
