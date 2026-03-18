@@ -25,13 +25,17 @@ const btnColors = [
 
 const Shop = () => {
   const { data: products = [], isLoading, error } = useProducts();
+  const { data: categories = [] } = useCategories();
   const { addItem } = useCart();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  const initialCategory = searchParams.get("category") as FilterPill | null;
-  const [activeFilter, setActiveFilter] = useState<FilterPill>(initialCategory || "All");
+  type FilterPill = "All" | string;
+  const filterPills: FilterPill[] = ["All", ...categories.map(c => c.name)];
+
+  const initialCategory = searchParams.get("category") || "All";
+  const [activeFilter, setActiveFilter] = useState<string>(initialCategory);
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredProducts = useMemo(() => {
