@@ -188,16 +188,18 @@ const Shop = () => {
                     onClick={() => navigate(`/product/${product.id}`)}
                   >
                     {/* Tags */}
-                    <div className="flex gap-2 mb-3">
-                      {cardTags.map((tag) => (
-                        <Badge
-                          key={tag}
-                          className="rounded-full text-[10px] font-bold uppercase tracking-wider px-3 py-1 bg-pastel-mint/60 text-foreground border-0"
-                        >
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
+                    {product.badges.length > 0 && (
+                      <div className="flex gap-2 mb-3">
+                        {product.badges.map((tag) => (
+                          <Badge
+                            key={tag}
+                            className="rounded-full text-[10px] font-bold uppercase tracking-wider px-3 py-1 bg-pastel-mint/60 text-foreground border-0"
+                          >
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
 
                     <div className="aspect-square flex items-center justify-center">
                       <img
