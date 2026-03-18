@@ -59,6 +59,7 @@ const Shop = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <AnnouncementBar />
       <Header />
 
       {/* Hero / Search Section */}
