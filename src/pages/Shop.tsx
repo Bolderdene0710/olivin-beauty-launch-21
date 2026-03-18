@@ -3,19 +3,16 @@ import { motion } from "framer-motion";
 import { Search } from "lucide-react";
 import { ProductCategory } from "@/types/product";
 import { useProducts } from "@/hooks/useProducts";
+import { useCategories } from "@/hooks/useCategories";
 import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
+import AnnouncementBar from "@/components/AnnouncementBar";
 import Footer from "@/components/Footer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 
-type FilterPill = "All" | ProductCategory | "Vegan" | "Cruelty-Free";
-
-const filterPills: FilterPill[] = ["All", "Serums", "Toners", "Creams", "Cleansers", "Vegan", "Cruelty-Free"];
-
-const cardTags = ["VEGAN", "HYDRATING"];
 const btnColors = [
   "bg-[hsl(70,90%,63%)]",
   "bg-pastel-pink",
@@ -27,19 +24,23 @@ const btnColors = [
 
 const Shop = () => {
   const { data: products = [], isLoading, error } = useProducts();
+  const { data: categories = [] } = useCategories();
   const { addItem } = useCart();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  const initialCategory = searchParams.get("category") as FilterPill | null;
-  const [activeFilter, setActiveFilter] = useState<FilterPill>(initialCategory || "All");
+  type FilterPill = "All" | string;
+  const filterPills: FilterPill[] = ["All", ...categories.map(c => c.name)];
+
+  const initialCategory = searchParams.get("category") || "All";
+  const [activeFilter, setActiveFilter] = useState<string>(initialCategory);
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredProducts = useMemo(() => {
     let filtered = products;
 
-    if (activeFilter !== "All" && activeFilter !== "Vegan" && activeFilter !== "Cruelty-Free") {
+    if (activeFilter !== "All") {
       filtered = filtered.filter((p) => p.category === activeFilter);
     }
 
@@ -57,6 +58,7 @@ const Shop = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <AnnouncementBar />
       <Header />
 
       {/* Hero / Search Section */}
@@ -185,16 +187,18 @@ const Shop = () => {
                     onClick={() => navigate(`/product/${product.id}`)}
                   >
                     {/* Tags */}
-                    <div className="flex gap-2 mb-3">
-                      {cardTags.map((tag) => (
-                        <Badge
-                          key={tag}
-                          className="rounded-full text-[10px] font-bold uppercase tracking-wider px-3 py-1 bg-pastel-mint/60 text-foreground border-0"
-                        >
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
+                    {product.badges.length > 0 && (
+                      <div className="flex gap-2 mb-3">
+                        {product.badges.map((tag) => (
+                          <Badge
+                            key={tag}
+                            className="rounded-full text-[10px] font-bold uppercase tracking-wider px-3 py-1 bg-pastel-mint/60 text-foreground border-0"
+                          >
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
 
                     <div className="aspect-square flex items-center justify-center">
                       <img
