@@ -41,7 +41,7 @@ const Shop = () => {
   const filteredProducts = useMemo(() => {
     let filtered = products;
 
-    if (activeFilter !== "All" && activeFilter !== "Vegan" && activeFilter !== "Cruelty-Free") {
+    if (activeFilter !== "All") {
       filtered = filtered.filter((p) => p.category === activeFilter);
     }
 
