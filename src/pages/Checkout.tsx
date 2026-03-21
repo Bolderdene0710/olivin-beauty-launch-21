@@ -16,7 +16,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { supabase } from "@/integrations/supabase/client";
+import { createManualOrder } from "@/lib/supabase";
 
 const Checkout = () => {
   const { items, cartTotal, clearCart } = useCart();
@@ -63,15 +63,12 @@ const Checkout = () => {
     setIsProcessing(true);
 
     try {
-      // Generate order number
       const orderNumber = `ORD${Date.now()}${Math.floor(Math.random() * 1000)}`;
-      
-      // Prepare order data for external database
-      // Using type assertion to bypass auto-generated types that don't match external DB
-      const orderData = {
+
+      await createManualOrder({
         order_number: orderNumber,
         customer_name: `${formData.firstName} ${formData.lastName}`,
-        email: formData.email, // Using 'email' instead of 'customer_email' for external DB
+        customer_email: formData.email,
         phone_number: formData.phoneNumber,
         district: formData.district,
         khoroo: formData.khoroo,
@@ -81,16 +78,10 @@ const Checkout = () => {
         items: items.map(item => ({
           id: item.id,
           name: item.name,
-          price: parseFloat(item.price.replace("$", "")),
+          price: parseFloat(item.price.replace(/[^0-9.]/g, "")),
           quantity: item.quantity,
         })),
-      };
-
-      // Save order to database - using type assertion for external DB compatibility
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error } = await (supabase.from("orders") as any).insert([orderData]);
-
-      if (error) throw error;
+      });
 
       clearCart();
       toast({
