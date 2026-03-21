@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -18,11 +19,14 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Star, ShoppingCart, Minus, Plus, Home, Truck, Shield, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useProductById, useProducts } from "@/hooks/useProducts";
+import { useProducts } from "@/hooks/useProducts";
 import { useCart } from "@/contexts/CartContext";
+import { fetchProductWithVariants, type ProductVariant } from "@/lib/supabase";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import ProductCard from "@/components/ProductCard";
+
+const PLACEHOLDER_IMAGE = "/placeholder.svg";
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -30,9 +34,52 @@ const ProductDetail = () => {
   const { toast } = useToast();
   const { addItem } = useCart();
   const [quantity, setQuantity] = useState(1);
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
 
-  const { data: product, isLoading, error } = useProductById(id || "");
+  // Fetch product with variants using manual API
+  const { data: rawProduct, isLoading, error } = useQuery({
+    queryKey: ["product-with-variants", id],
+    queryFn: () => fetchProductWithVariants(id!),
+    enabled: !!id,
+  });
+
   const { data: allProducts } = useProducts();
+
+  // Group variants by type
+  const variantsByType = useMemo(() => {
+    if (!rawProduct?.product_variants?.length) return {};
+    const groups: Record<string, ProductVariant[]> = {};
+    for (const v of rawProduct.product_variants) {
+      if (!groups[v.variant_type]) groups[v.variant_type] = [];
+      groups[v.variant_type].push(v);
+    }
+    return groups;
+  }, [rawProduct]);
+
+  // Calculate displayed price
+  const basePrice = rawProduct?.price ?? 0;
+  const adjustment = selectedVariant?.price_adjustment ?? 0;
+  const displayPrice = basePrice + adjustment;
+  const formattedPrice = `${displayPrice.toLocaleString()}₮`;
+
+  // Map to frontend product shape for related products filtering
+  const product = rawProduct
+    ? {
+        id: rawProduct.id,
+        name: rawProduct.title,
+        brand: rawProduct.brand,
+        price: formattedPrice,
+        image: rawProduct.image_url || PLACEHOLDER_IMAGE,
+        images: rawProduct.images || [],
+        category: rawProduct.category,
+        description: rawProduct.description || "",
+        ingredients: rawProduct.ingredients || [],
+        howToUse: rawProduct.how_to_use || "",
+        benefits: rawProduct.benefits || [],
+        badges: rawProduct.badges || [],
+        reviews: [] as { id: number; author: string; rating: number; date: string; comment: string }[],
+      }
+    : null;
 
   const relatedProducts = allProducts
     ?.filter((p) => p.id !== id)
@@ -40,20 +87,25 @@ const ProductDetail = () => {
     .slice(0, 4);
 
   const handleAddToCart = () => {
-    if (!product) return;
+    if (!product || !rawProduct) return;
+
+    const cartId = selectedVariant ? `${rawProduct.id}_${selectedVariant.id}` : rawProduct.id;
+    const cartName = selectedVariant
+      ? `${product.name} (${selectedVariant.variant_name})`
+      : product.name;
 
     for (let i = 0; i < quantity; i++) {
       addItem({
-        id: product.id,
-        name: product.name,
-        price: product.price,
+        id: cartId,
+        name: cartName,
+        price: formattedPrice,
         image: product.image,
       });
     }
 
     toast({
       title: "Сагсанд нэмэгдлээ",
-      description: `${product.name} (${quantity}ш) таны сагсанд нэмэгдлээ.`,
+      description: `${cartName} (${quantity}ш) таны сагсанд нэмэгдлээ.`,
     });
     setQuantity(1);
   };
@@ -178,8 +230,13 @@ const ProductDetail = () => {
             {/* Price */}
             <div className="mb-6">
               <span className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                {product.price}
+                {formattedPrice}
               </span>
+              {selectedVariant && selectedVariant.price_adjustment !== 0 && (
+                <span className="ml-3 text-sm text-muted-foreground line-through">
+                  {basePrice.toLocaleString()}₮
+                </span>
+              )}
             </div>
 
             {/* Description */}
@@ -188,6 +245,48 @@ const ProductDetail = () => {
                 ? product.description
                 : "Энэ бүтээгдэхүүний дэлгэрэнгүй тайлбар удахгүй нэмэгдэнэ."}
             </p>
+
+            {/* Variant Selectors */}
+            {Object.keys(variantsByType).length > 0 && (
+              <div className="mb-8 space-y-4">
+                {Object.entries(variantsByType).map(([type, variants]) => (
+                  <div key={type}>
+                    <label className="block text-sm font-semibold text-foreground mb-2">
+                      {type}
+                      {selectedVariant && variants.some(v => v.id === selectedVariant.id) && (
+                        <span className="ml-2 text-primary font-normal">— {selectedVariant.variant_name}</span>
+                      )}
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {variants.map((variant) => {
+                        const isSelected = selectedVariant?.id === variant.id;
+                        const isOutOfStock = variant.stock_quantity <= 0;
+                        return (
+                          <button
+                            key={variant.id}
+                            onClick={() => setSelectedVariant(isSelected ? null : variant)}
+                            disabled={isOutOfStock}
+                            className={`
+                              px-4 py-2.5 rounded-xl text-sm font-medium border-2 transition-all duration-200
+                              ${isSelected
+                                ? "border-primary bg-primary/10 text-primary shadow-sm"
+                                : "border-border bg-background text-foreground hover:border-primary/50 hover:bg-muted/50"
+                              }
+                              ${isOutOfStock ? "opacity-40 cursor-not-allowed line-through" : "cursor-pointer"}
+                            `}
+                          >
+                            {variant.variant_name}
+                            {variant.price_adjustment > 0 && (
+                              <span className="ml-1 text-xs text-muted-foreground">+{variant.price_adjustment.toLocaleString()}₮</span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Benefits */}
             {product.benefits && product.benefits.length > 0 && (
@@ -207,7 +306,6 @@ const ProductDetail = () => {
 
             {/* Quantity & Add to Cart */}
             <div className="flex flex-col sm:flex-row items-stretch gap-4 mb-8">
-              {/* Quantity */}
               <div className="flex items-center border-2 border-border rounded-2xl bg-background overflow-hidden">
                 <button
                   onClick={decrementQuantity}
@@ -228,7 +326,6 @@ const ProductDetail = () => {
                 </button>
               </div>
 
-              {/* Add to Cart */}
               <Button
                 size="lg"
                 className="flex-1 text-base gap-3 h-16 rounded-2xl font-bold shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 hover:scale-[1.02]"
@@ -385,7 +482,7 @@ const ProductDetail = () => {
             onClick={handleAddToCart}
           >
             <ShoppingCart className="w-5 h-5" />
-            <span>{product.price}</span>
+            <span>{formattedPrice}</span>
           </Button>
         </div>
       </div>
