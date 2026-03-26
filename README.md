@@ -1,32 +1,41 @@
-# Olivin Beauty - Admin Dashboard
+# 🌸 Olivin Beauty - E-Commerce Platform
 
-이 프로젝트는 이커머스(E-commerce) 웹사이트를 위한 백오피스 관리자 시스템입니다. 최신 웹 기술을 활용하여 개발되었으며, 관리자가 상품, 주문, 고객 데이터를 효율적으로 관리할 수 있도록 설계되었습니다.
+Authentic K-Beauty e-commerce platform built for the Mongolian market. This project features a modern storefront, dynamic product variants, a shopping cart, and a custom checkout flow, all powered by a real-time Supabase backend.
 
-## 🛠 사용 기술 (Tech Stack)
+![Project Status](https://img.shields.io/badge/Status-Active-success)
+![React](https://img.shields.io/badge/React-18.2-blue)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
+![TailwindCSS](https://img.shields.io/badge/Tailwind-3.0-38B2AC)
+![Supabase](https://img.shields.io/badge/Supabase-Backend-3ECF8E)
 
-이 프로젝트는 다음의 최신 기술 스택을 기반으로 구축되었습니다:
+## ✨ Key Features
 
-- **Frontend:** [React](https://reactjs.org/) + [Vite](https://vitejs.dev/) (Build tool)
-- **Language:** [TypeScript](https://www.typescriptlang.org/)
-- **Styling:** [Tailwind CSS](https://tailwindcss.com/)
-- **Components:** [shadcn/ui](https://ui.shadcn.com/)
-- **Backend & Database:** [Supabase](https://supabase.com/)
-- **State Management:** React Query (TanStack Query)
+* **Dynamic Product Catalog:** Fetching real-time products from Supabase.
+* **Smart Variants:** Product detail pages support variant selections (e.g., Color, Size) with dynamic price adjustments.
+* **Shopping Cart:** Persistent cart state using React Context.
+* **Custom Checkout:** Tailored for Mongolian addresses (District, Khoroo, Detailed Address).
+* **Responsive Design:** Mobile-first approach using Tailwind CSS.
+* **Admin Ready:** Database structure supports an admin panel for inventory and order management.
 
-## ✨ 주요 기능 (Key Features)
+## 🛠️ Tech Stack
 
-- **Dashboard:** 매출 현황, 주요 통계 및 최근 활동 요약.
-- **Product Management:** 상품 등록, 수정, 삭제(CRUD) 및 이미지 업로드 기능.
-- **Order Management:** 주문 내역 확인, 주문 상태 변경 및 관리.
-- **Customer Management:** 가입된 고객 리스트 및 상세 정보 조회.
-- **Authentication:** 안전한 관리자 로그인 및 인증 시스템.
+* **Frontend:** React (Vite), TypeScript, Tailwind CSS, shadcn/ui, Lucide Icons.
+* **State Management:** React Query (@tanstack/react-query), React Context.
+* **Backend & Database:** Supabase (PostgreSQL).
+* **Routing:** React Router DOM.
 
-## 🚀 설치 및 실행 방법 (Installation)
+## 🚀 Getting Started
 
-로컬 환경에서 프로젝트를 실행하려면 다음 단계를 따르세요.
+Follow these steps to run the project locally.
 
-### 1. 필수 조건 (Prerequisites)
-컴퓨터에 [Node.js](https://nodejs.org/) (v18 이상)가 설치되어 있어야 합니다.
+### 1. Prerequisites
+* [Node.js](https://nodejs.org/) (v16 or higher)
+* A [Supabase](https://supabase.com/) account and project.
+
+### 2. Clone the repository
+```bash
+git clone [https://github.com/your-username/olivin-beauty.git](https://github.com/your-username/olivin-beauty.git)
+cd olivin-beautys.org/) (v18 이상)가 설치되어 있어야 합니다.
 
 ### 2. 프로젝트 복제 (Clone)
 ```bash
