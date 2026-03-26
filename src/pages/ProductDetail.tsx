@@ -19,10 +19,10 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Star, ShoppingCart, Minus, Plus, Home, Truck, Shield, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useProducts } from "@/hooks/useProducts";
+import { useProducts } from "@/hooks/useProducts"; // Note: This might still show mock data if not updated in Shop.tsx
 import { useCart } from "@/contexts/CartContext";
 import { fetchProductWithVariants, type ProductVariant } from "@/lib/supabase";
-import Footer from "@/components/Footer";
+import Footer from "@/components/Footer"; 
 import Header from "@/components/Header";
 import ProductCard from "@/components/ProductCard";
 
@@ -36,25 +36,17 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
 
-  // Fetch product with variants using manual API
+  // Fetch product with variants using manual API - Fetches live data
   const { data: rawProduct, isLoading, error } = useQuery({
     queryKey: ["product-with-variants", id],
     queryFn: () => fetchProductWithVariants(id!),
     enabled: !!id,
   });
 
+  // Keep hook for related products, but live data is handled by rawProduct above
   const { data: allProducts } = useProducts();
 
-  // Group variants by type
-  const variantsByType = useMemo(() => {
-    if (!rawProduct?.product_variants?.length) return {};
-    const groups: Record<string, ProductVariant[]> = {};
-    for (const v of rawProduct.product_variants) {
-      if (!groups[v.variant_type]) groups[v.variant_type] = [];
-      groups[v.variant_type].push(v);
-    }
-    return groups;
-  }, [rawProduct]);
+  // FIX: Removed 'variantsByType' useMemo logic because 'variant_type' column does not exist in DB
 
   // Calculate displayed price
   const basePrice = rawProduct?.price ?? 0;
@@ -90,8 +82,9 @@ const ProductDetail = () => {
     if (!product || !rawProduct) return;
 
     const cartId = selectedVariant ? `${rawProduct.id}_${selectedVariant.id}` : rawProduct.id;
+    // FIX: Map cart item name using option_name
     const cartName = selectedVariant
-      ? `${product.name} (${selectedVariant.variant_name})`
+      ? `${product.name} (${selectedVariant.option_name})`
       : product.name;
 
     for (let i = 0; i < quantity; i++) {
@@ -246,45 +239,45 @@ const ProductDetail = () => {
                 : "Энэ бүтээгдэхүүний дэлгэрэнгүй тайлбар удахгүй нэмэгдэнэ."}
             </p>
 
-            {/* Variant Selectors */}
-            {Object.keys(variantsByType).length > 0 && (
+            {/* Variant Selectors - FIX: Reworked section */}
+            {rawProduct?.product_variants && rawProduct.product_variants.length > 0 && (
               <div className="mb-8 space-y-4">
-                {Object.entries(variantsByType).map(([type, variants]) => (
-                  <div key={type}>
-                    <label className="block text-sm font-semibold text-foreground mb-2">
-                      {type}
-                      {selectedVariant && variants.some(v => v.id === selectedVariant.id) && (
-                        <span className="ml-2 text-primary font-normal">— {selectedVariant.variant_name}</span>
-                      )}
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      {variants.map((variant) => {
-                        const isSelected = selectedVariant?.id === variant.id;
-                        const isOutOfStock = variant.stock_quantity <= 0;
-                        return (
-                          <button
-                            key={variant.id}
-                            onClick={() => setSelectedVariant(isSelected ? null : variant)}
-                            disabled={isOutOfStock}
-                            className={`
-                              px-4 py-2.5 rounded-xl text-sm font-medium border-2 transition-all duration-200
-                              ${isSelected
-                                ? "border-primary bg-primary/10 text-primary shadow-sm"
-                                : "border-border bg-background text-foreground hover:border-primary/50 hover:bg-muted/50"
-                              }
-                              ${isOutOfStock ? "opacity-40 cursor-not-allowed line-through" : "cursor-pointer"}
-                            `}
-                          >
-                            {variant.variant_name}
-                            {variant.price_adjustment > 0 && (
-                              <span className="ml-1 text-xs text-muted-foreground">+{variant.price_adjustment.toLocaleString()}₮</span>
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
+                <div>
+                  <label className="block text-sm font-semibold text-foreground mb-2">
+                    Сонголтууд
+                    {selectedVariant && (
+                      <span className="ml-2 text-primary font-normal">— {selectedVariant.option_name}</span>
+                    )}
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {rawProduct.product_variants.map((variant) => {
+                      const isSelected = selectedVariant?.id === variant.id;
+                      // FIX: DB column is 'stock', not 'stock_quantity'
+                      const isOutOfStock = variant.stock <= 0;
+                      return (
+                        <button
+                          key={variant.id}
+                          onClick={() => setSelectedVariant(isSelected ? null : variant)}
+                          disabled={isOutOfStock}
+                          className={`
+                            px-4 py-2.5 rounded-xl text-sm font-medium border-2 transition-all duration-200
+                            ${isSelected
+                              ? "border-primary bg-primary/10 text-primary shadow-sm"
+                              : "border-border bg-background text-foreground hover:border-primary/50 hover:bg-muted/50"
+                            }
+                            ${isOutOfStock ? "opacity-40 cursor-not-allowed line-through" : "cursor-pointer"}
+                          `}
+                        >
+                          {/* FIX: Map option_name */}
+                          {variant.option_name}
+                          {variant.price_adjustment > 0 && (
+                            <span className="ml-1 text-xs text-muted-foreground">+{variant.price_adjustment.toLocaleString()}₮</span>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
-                ))}
+                </div>
               </div>
             )}
 

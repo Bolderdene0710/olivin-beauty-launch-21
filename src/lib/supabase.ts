@@ -1,7 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 
-// 1. Supabase клиент эхлүүлэх
-// Lovable болон локал орчны .env-ээс мэдээллийг автоматаар уншина
+
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
@@ -54,3 +53,10 @@ export const createManualOrder = async (orderData: Record<string, unknown>) => {
   }
   return data;
 };
+export interface ProductVariant {
+  id: string;
+  product_id?: string;
+  option_name: string;
+  stock: number;
+  price_adjustment: number;
+}
