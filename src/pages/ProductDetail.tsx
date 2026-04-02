@@ -276,7 +276,7 @@ const ProductDetail = () => {
                               ${isOutOfStock ? "opacity-40 cursor-not-allowed line-through" : "cursor-pointer"}
                             `}
                           >
-                            {variant.variant_name}
+                            {variant.option_name || variant.variant_name}
                             {variant.price_adjustment > 0 && (
                               <span className="ml-1 text-xs text-muted-foreground">+{variant.price_adjustment.toLocaleString()}₮</span>
                             )}
