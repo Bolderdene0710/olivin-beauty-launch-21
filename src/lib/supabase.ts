@@ -1,15 +1,26 @@
 import { createClient } from '@supabase/supabase-js';
 
-// 1. Supabase клиент эхлүүлэх
-// Lovable болон локал орчны .env-ээс мэдээллийг автоматаар уншина
+// ProductVariant type matching product_variants table
+export interface ProductVariant {
+  id: string;
+  option_name: string;
+  variant_name?: string;
+  variant_type?: string;
+  stock: number;
+  stock_quantity?: number;
+  price_adjustment: number;
+  is_active?: boolean;
+  sku?: string;
+}
+
+// Supabase клиент — OLIVIN external project
 const supabaseUrl = "https://actmbbplproqbphfdeiv.supabase.co";
 const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFjdG1iYnBscHJvcWJwaGZkZWl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3ODUwMTMsImV4cCI6MjA4OTM2MTAxM30.hNf2HS6LfMWP752fmpEBBggn_GcsYF6CbzjGfJETaMA";
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 /*
- * 2. БАРААНЫ ХУВИЛБАР ТАТАХ ФУНКЦ
- * Барааны үндсэн мэдээлэл болон түүнд хамаарах бүх хувилбаруудыг (variants) нэг дор татна.
+ * БАРААНЫ ХУВИЛБАР ТАТАХ ФУНКЦ
  */
 export const fetchProductWithVariants = async (productId: string) => {
   const { data, error } = await supabase
@@ -34,9 +45,7 @@ export const fetchProductWithVariants = async (productId: string) => {
 };
 
 /*
- * 3. ЗАХИАЛГА ХАДГАЛАХ ФУНКЦ
- * Бидний гараар нэмсэн (district, khoroo, detailed_address) багануудад зориулагдсан.
- * Record<string, unknown> ашиглан TypeScript-ийн 'any' алдааг засав.
+ * ЗАХИАЛГА ХАДГАЛАХ ФУНКЦ
  */
 export const createManualOrder = async (orderData: Record<string, unknown>) => {
   const { data, error } = await supabase
