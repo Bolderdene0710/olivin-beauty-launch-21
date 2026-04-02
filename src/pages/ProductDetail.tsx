@@ -255,7 +255,7 @@ const ProductDetail = () => {
                     <label className="block text-sm font-semibold text-foreground mb-2">
                       {type}
                       {selectedVariant && variants.some(v => v.id === selectedVariant.id) && (
-                        <span className="ml-2 text-primary font-normal">— {selectedVariant.variant_name}</span>
+                        <span className="ml-2 text-primary font-normal">— {selectedVariant.option_name || selectedVariant.variant_name}</span>
                       )}
                     </label>
                     <div className="flex flex-wrap gap-2">
