@@ -50,8 +50,9 @@ const ProductDetail = () => {
     if (!rawProduct?.product_variants?.length) return {};
     const groups: Record<string, ProductVariant[]> = {};
     for (const v of rawProduct.product_variants) {
-      if (!groups[v.variant_type]) groups[v.variant_type] = [];
-      groups[v.variant_type].push(v);
+      const type = v.variant_type || "Сонголт";
+      if (!groups[type]) groups[type] = [];
+      groups[type].push(v);
     }
     return groups;
   }, [rawProduct]);
