@@ -50,8 +50,9 @@ const ProductDetail = () => {
     if (!rawProduct?.product_variants?.length) return {};
     const groups: Record<string, ProductVariant[]> = {};
     for (const v of rawProduct.product_variants) {
-      if (!groups[v.variant_type]) groups[v.variant_type] = [];
-      groups[v.variant_type].push(v);
+      const type = v.variant_type || "Сонголт";
+      if (!groups[type]) groups[type] = [];
+      groups[type].push(v);
     }
     return groups;
   }, [rawProduct]);
@@ -91,7 +92,7 @@ const ProductDetail = () => {
 
     const cartId = selectedVariant ? `${rawProduct.id}_${selectedVariant.id}` : rawProduct.id;
     const cartName = selectedVariant
-      ? `${product.name} (${selectedVariant.variant_name})`
+      ? `${product.name} (${selectedVariant.option_name || selectedVariant.variant_name})`
       : product.name;
 
     for (let i = 0; i < quantity; i++) {
@@ -254,13 +255,13 @@ const ProductDetail = () => {
                     <label className="block text-sm font-semibold text-foreground mb-2">
                       {type}
                       {selectedVariant && variants.some(v => v.id === selectedVariant.id) && (
-                        <span className="ml-2 text-primary font-normal">— {selectedVariant.variant_name}</span>
+                        <span className="ml-2 text-primary font-normal">— {selectedVariant.option_name || selectedVariant.variant_name}</span>
                       )}
                     </label>
                     <div className="flex flex-wrap gap-2">
                       {variants.map((variant) => {
                         const isSelected = selectedVariant?.id === variant.id;
-                        const isOutOfStock = variant.stock_quantity <= 0;
+                        const isOutOfStock = (variant.stock ?? variant.stock_quantity ?? 0) <= 0;
                         return (
                           <button
                             key={variant.id}
@@ -275,7 +276,7 @@ const ProductDetail = () => {
                               ${isOutOfStock ? "opacity-40 cursor-not-allowed line-through" : "cursor-pointer"}
                             `}
                           >
-                            {variant.variant_name}
+                            {variant.option_name || variant.variant_name}
                             {variant.price_adjustment > 0 && (
                               <span className="ml-1 text-xs text-muted-foreground">+{variant.price_adjustment.toLocaleString()}₮</span>
                             )}

@@ -4,7 +4,7 @@ import { NavLink } from "@/components/NavLink";
 import { useState, useEffect } from "react";
 import { useCart } from "@/contexts/CartContext";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { User as SupabaseUser } from "@supabase/supabase-js";
 import { AnimatePresence, motion } from "framer-motion";
 

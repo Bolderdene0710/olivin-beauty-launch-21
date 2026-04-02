@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { ProductRow, Product, ProductCategory, mapProductRowToProduct } from "@/types/product";
 
 export function useProducts() {
