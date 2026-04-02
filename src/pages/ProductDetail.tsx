@@ -92,7 +92,7 @@ const ProductDetail = () => {
 
     const cartId = selectedVariant ? `${rawProduct.id}_${selectedVariant.id}` : rawProduct.id;
     const cartName = selectedVariant
-      ? `${product.name} (${selectedVariant.variant_name})`
+      ? `${product.name} (${selectedVariant.option_name || selectedVariant.variant_name})`
       : product.name;
 
     for (let i = 0; i < quantity; i++) {
