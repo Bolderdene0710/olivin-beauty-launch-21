@@ -261,7 +261,7 @@ const ProductDetail = () => {
                     <div className="flex flex-wrap gap-2">
                       {variants.map((variant) => {
                         const isSelected = selectedVariant?.id === variant.id;
-                        const isOutOfStock = variant.stock_quantity <= 0;
+                        const isOutOfStock = (variant.stock ?? variant.stock_quantity ?? 0) <= 0;
                         return (
                           <button
                             key={variant.id}
