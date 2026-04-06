@@ -361,7 +361,7 @@ const Checkout = () => {
                     Боловсруулж байна...
                   </span>
                 ) : (
-                  "Захиалга баталгаажуулах"
+                  "Төлбөр төлөх"
                 )}
               </Button>
 
@@ -374,6 +374,13 @@ const Checkout = () => {
         </div>
       </main>
       <Footer />
+
+      <PaymentModal
+        open={showPaymentModal}
+        onOpenChange={setShowPaymentModal}
+        orderNumber={orderNumber}
+        totalAmount={cartTotal}
+      />
     </div>
   );
 };
