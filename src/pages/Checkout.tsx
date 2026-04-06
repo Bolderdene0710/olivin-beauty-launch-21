@@ -61,15 +61,18 @@ const Checkout = () => {
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsProcessing(true);
+  const handleSubmit = async () => {
+    if (!formData.email || !formData.firstName || !formData.lastName || !formData.phoneNumber || !formData.district || !formData.khoroo || !formData.detailedAddress) {
+      toast({ title: "Бүх талбарыг бөглөнө үү", variant: "destructive" });
+      return;
+    }
 
+    setIsProcessing(true);
     try {
-      const orderNumber = `ORD${Date.now()}${Math.floor(Math.random() * 1000)}`;
+      const newOrderNumber = `ORD${Date.now()}${Math.floor(Math.random() * 1000)}`;
 
       await createManualOrder({
-        order_number: orderNumber,
+        order_number: newOrderNumber,
         customer_name: `${formData.firstName} ${formData.lastName}`,
         customer_email: formData.email,
         phone_number: formData.phoneNumber,
@@ -86,18 +89,13 @@ const Checkout = () => {
         })),
       });
 
+      setOrderNumber(newOrderNumber);
+      setShowPaymentModal(true);
       clearCart();
-      toast({
-        title: "Захиалга амжилттай!",
-        description: `Таны захиалгын дугаар: ${orderNumber}. Захиалгаа хянахын тулд хадгалаарай.`,
-        duration: 6000,
-      });
-
-      navigate(`/track-order?order=${orderNumber}`);
     } catch (error: any) {
       toast({
         title: "Алдаа",
-        description: error.message || "Захиалга илгээхэд алдаа гарлаа. Дахин оролдоно уу.",
+        description: error.message || "Захиалга илгээхэд алдаа гарлаа.",
         variant: "destructive",
       });
     } finally {
