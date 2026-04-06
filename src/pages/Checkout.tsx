@@ -24,6 +24,8 @@ const Checkout = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [orderNumber, setOrderNumber] = useState("");
 
   const [formData, setFormData] = useState({
     email: "",
