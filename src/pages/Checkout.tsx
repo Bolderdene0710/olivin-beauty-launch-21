@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useCart } from "@/contexts/CartContext";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
@@ -17,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { createManualOrder } from "@/lib/supabase";
+import { Mail, Phone, MapPin, User, CreditCard, ShoppingBag, ChevronLeft, Shield } from "lucide-react";
 
 const Checkout = () => {
   const { items, cartTotal, clearCart } = useCart();
@@ -85,17 +85,16 @@ const Checkout = () => {
 
       clearCart();
       toast({
-        title: "Order Placed Successfully!",
-        description: `Your order number is ${orderNumber}. Please save it to track your order.`,
+        title: "Захиалга амжилттай!",
+        description: `Таны захиалгын дугаар: ${orderNumber}. Захиалгаа хянахын тулд хадгалаарай.`,
         duration: 6000,
       });
-      
-      // Navigate to order tracking with the order number
+
       navigate(`/track-order?order=${orderNumber}`);
     } catch (error: any) {
       toast({
-        title: "Error",
-        description: error.message || "Failed to place order. Please try again.",
+        title: "Алдаа",
+        description: error.message || "Захиалга илгээхэд алдаа гарлаа. Дахин оролдоно уу.",
         variant: "destructive",
       });
     } finally {
@@ -109,21 +108,43 @@ const Checkout = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#f5f5f3]">
       <Header />
-      <main className="container mx-auto px-4 py-8 md:py-12">
-        <h1 className="text-3xl md:text-4xl font-bold mb-8">Checkout</h1>
+      <main className="container mx-auto px-4 py-8 md:py-12 max-w-6xl">
+        {/* Back button */}
+        <button
+          onClick={() => navigate("/cart")}
+          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6 font-[Jost]"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Сагс руу буцах
+        </button>
+
+        <h1 className="text-3xl md:text-4xl font-light tracking-wide mb-2 font-[Cormorant_Garamond]">
+          Захиалга баталгаажуулах
+        </h1>
+        <p className="text-muted-foreground text-sm mb-8 font-[Jost]">
+          Мэдээллээ бөглөөд захиалгаа баталгаажуулна уу
+        </p>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Checkout Form */}
-          <div className="lg:col-span-2">
-            <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="lg:col-span-2 space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-5">
               {/* Contact Information */}
-              <Card className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="email">Email</Label>
+              <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-border/40">
+                <div className="flex items-center gap-2.5 mb-5">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Mail className="w-4 h-4 text-primary" />
+                  </div>
+                  <h2 className="text-lg font-medium font-[Jost]">Холбоо барих мэдээлэл</h2>
+                </div>
+                <div>
+                  <Label htmlFor="email" className="text-xs uppercase tracking-wider text-muted-foreground font-[Jost] mb-1.5 block">
+                    Имэйл хаяг
+                  </Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
                       id="email"
                       name="email"
@@ -132,75 +153,104 @@ const Checkout = () => {
                       value={formData.email}
                       onChange={handleInputChange}
                       placeholder="you@example.com"
+                      className="pl-10 h-12 rounded-xl border-border/60 bg-[#f5f5f3]/50 focus:ring-2 focus:ring-primary/30 focus:border-primary font-[Jost]"
                     />
                   </div>
                 </div>
-              </Card>
+              </div>
 
               {/* Shipping Address */}
-              <Card className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Shipping Address</h2>
+              <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-border/40">
+                <div className="flex items-center gap-2.5 mb-5">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <MapPin className="w-4 h-4 text-primary" />
+                  </div>
+                  <h2 className="text-lg font-medium font-[Jost]">Хүргэлтийн хаяг</h2>
+                </div>
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="firstName">First Name</Label>
-                      <Input
-                        id="firstName"
-                        name="firstName"
-                        required
-                        value={formData.firstName}
-                        onChange={handleInputChange}
-                      />
+                      <Label htmlFor="firstName" className="text-xs uppercase tracking-wider text-muted-foreground font-[Jost] mb-1.5 block">
+                        Овог
+                      </Label>
+                      <div className="relative">
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Input
+                          id="firstName"
+                          name="firstName"
+                          required
+                          value={formData.firstName}
+                          onChange={handleInputChange}
+                          className="pl-10 h-12 rounded-xl border-border/60 bg-[#f5f5f3]/50 focus:ring-2 focus:ring-primary/30 focus:border-primary font-[Jost]"
+                        />
+                      </div>
                     </div>
                     <div>
-                      <Label htmlFor="lastName">Last Name</Label>
+                      <Label htmlFor="lastName" className="text-xs uppercase tracking-wider text-muted-foreground font-[Jost] mb-1.5 block">
+                        Нэр
+                      </Label>
+                      <div className="relative">
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Input
+                          id="lastName"
+                          name="lastName"
+                          required
+                          value={formData.lastName}
+                          onChange={handleInputChange}
+                          className="pl-10 h-12 rounded-xl border-border/60 bg-[#f5f5f3]/50 focus:ring-2 focus:ring-primary/30 focus:border-primary font-[Jost]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="phoneNumber" className="text-xs uppercase tracking-wider text-muted-foreground font-[Jost] mb-1.5 block">
+                      Утасны дугаар
+                    </Label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                       <Input
-                        id="lastName"
-                        name="lastName"
+                        id="phoneNumber"
+                        name="phoneNumber"
+                        type="tel"
                         required
-                        value={formData.lastName}
+                        value={formData.phoneNumber}
                         onChange={handleInputChange}
+                        placeholder="+976 99123456"
+                        className="pl-10 h-12 rounded-xl border-border/60 bg-[#f5f5f3]/50 focus:ring-2 focus:ring-primary/30 focus:border-primary font-[Jost]"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <Label htmlFor="phoneNumber">Phone Number *</Label>
-                    <Input
-                      id="phoneNumber"
-                      name="phoneNumber"
-                      type="tel"
-                      required
-                      value={formData.phoneNumber}
-                      onChange={handleInputChange}
-                      placeholder="+976 99123456"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="city">City</Label>
+                    <Label htmlFor="city" className="text-xs uppercase tracking-wider text-muted-foreground font-[Jost] mb-1.5 block">
+                      Хот
+                    </Label>
                     <Input
                       id="city"
                       name="city"
                       required
                       value={formData.city}
                       onChange={handleInputChange}
-                      placeholder="Ulaanbaatar"
+                      placeholder="Улаанбаатар"
+                      className="h-12 rounded-xl border-border/60 bg-[#f5f5f3]/50 focus:ring-2 focus:ring-primary/30 focus:border-primary font-[Jost]"
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="district">District *</Label>
+                      <Label htmlFor="district" className="text-xs uppercase tracking-wider text-muted-foreground font-[Jost] mb-1.5 block">
+                        Дүүрэг
+                      </Label>
                       <Select
                         value={formData.district}
                         onValueChange={(value) => handleSelectChange("district", value)}
                         required
                       >
-                        <SelectTrigger className="bg-background">
-                          <SelectValue placeholder="Select district" />
+                        <SelectTrigger className="h-12 rounded-xl border-border/60 bg-[#f5f5f3]/50 focus:ring-2 focus:ring-primary/30 focus:border-primary font-[Jost]">
+                          <SelectValue placeholder="Дүүрэг сонгох" />
                         </SelectTrigger>
-                        <SelectContent className="bg-background z-50">
+                        <SelectContent className="bg-white z-50 rounded-xl font-[Jost]">
                           {mongolianDistricts.map((district) => (
                             <SelectItem key={district} value={district}>
                               {district}
@@ -210,7 +260,9 @@ const Checkout = () => {
                       </Select>
                     </div>
                     <div>
-                      <Label htmlFor="khoroo">Khoroo *</Label>
+                      <Label htmlFor="khoroo" className="text-xs uppercase tracking-wider text-muted-foreground font-[Jost] mb-1.5 block">
+                        Хороо
+                      </Label>
                       <Input
                         id="khoroo"
                         name="khoroo"
@@ -220,61 +272,87 @@ const Checkout = () => {
                         onChange={handleInputChange}
                         placeholder="1"
                         min="1"
+                        className="h-12 rounded-xl border-border/60 bg-[#f5f5f3]/50 focus:ring-2 focus:ring-primary/30 focus:border-primary font-[Jost]"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <Label htmlFor="detailedAddress">Detailed Address (Street/Apartment) *</Label>
+                    <Label htmlFor="detailedAddress" className="text-xs uppercase tracking-wider text-muted-foreground font-[Jost] mb-1.5 block">
+                      Дэлгэрэнгүй хаяг
+                    </Label>
                     <Input
                       id="detailedAddress"
                       name="detailedAddress"
                       required
                       value={formData.detailedAddress}
                       onChange={handleInputChange}
-                      placeholder="Building 5, Apartment 12"
+                      placeholder="Байр 5, Тоот 12"
+                      className="h-12 rounded-xl border-border/60 bg-[#f5f5f3]/50 focus:ring-2 focus:ring-primary/30 focus:border-primary font-[Jost]"
                     />
                   </div>
                 </div>
-              </Card>
+              </div>
 
               {/* Payment */}
-              <Card className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Payment</h2>
+              <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-border/40">
+                <div className="flex items-center gap-2.5 mb-5">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <CreditCard className="w-4 h-4 text-primary" />
+                  </div>
+                  <h2 className="text-lg font-medium font-[Jost]">Төлбөрийн мэдээлэл</h2>
+                </div>
                 <div className="space-y-3">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3 p-3 rounded-xl border-2 border-primary bg-primary/5">
                     <div className="w-5 h-5 rounded-full border-2 border-primary flex items-center justify-center">
                       <div className="w-2.5 h-2.5 rounded-full bg-primary" />
                     </div>
-                    <span className="font-medium">Bank Transfer</span>
+                    <span className="font-medium font-[Jost]">Банкны шилжүүлэг</span>
                   </div>
-                  <div className="bg-muted/50 p-4 rounded-lg space-y-2">
-                    <p className="text-sm">
-                      Please transfer the total amount to:
+                  <div className="bg-[#f5f5f3] p-5 rounded-xl space-y-3 mt-3">
+                    <p className="text-sm text-muted-foreground font-[Jost]">
+                      Нийт дүнг доорх данс руу шилжүүлнэ үү:
                     </p>
-                    <div className="font-mono text-sm space-y-1">
-                      <p><span className="font-semibold">Bank:</span> Khan Bank</p>
-                      <p><span className="font-semibold">Account:</span> 5037716403</p>
-                      <p><span className="font-semibold">Account Name:</span> Account Name</p>
+                    <div className="space-y-2.5">
+                      <div className="flex justify-between items-center py-2 border-b border-border/40">
+                        <span className="text-xs uppercase tracking-wider text-muted-foreground font-[Jost]">Банк</span>
+                        <span className="font-medium font-[Jost]">Хаан Банк</span>
+                      </div>
+                      <div className="flex justify-between items-center py-2 border-b border-border/40">
+                        <span className="text-xs uppercase tracking-wider text-muted-foreground font-[Jost]">Данс</span>
+                        <span className="font-mono font-medium">5037716403</span>
+                      </div>
+                      <div className="flex justify-between items-center py-2">
+                        <span className="text-xs uppercase tracking-wider text-muted-foreground font-[Jost]">Дансны нэр</span>
+                        <span className="font-medium font-[Jost]">Account Name</span>
+                      </div>
                     </div>
-                    <p className="text-xs text-muted-foreground pt-2">
-                      Your order will be processed after payment confirmation.
-                    </p>
+                    <div className="flex items-start gap-2 pt-2">
+                      <Shield className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                      <p className="text-xs text-muted-foreground font-[Jost]">
+                        Төлбөр баталгаажсаны дараа таны захиалга боловсруулагдана.
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </Card>
+              </div>
             </form>
           </div>
 
           {/* Order Summary */}
           <div className="lg:col-span-1">
-            <Card className="p-6 sticky top-24">
-              <h2 className="text-xl font-semibold mb-6">Order Summary</h2>
+            <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-border/40 sticky top-24">
+              <div className="flex items-center gap-2.5 mb-6">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <ShoppingBag className="w-4 h-4 text-primary" />
+                </div>
+                <h2 className="text-lg font-medium font-[Jost]">Захиалгын хураангуй</h2>
+              </div>
 
               <div className="space-y-4 mb-6">
                 {items.map((item) => (
-                  <div key={item.id} className="flex gap-4">
-                    <div className="w-16 h-16 rounded overflow-hidden bg-muted flex-shrink-0">
+                  <div key={item.id} className="flex gap-3">
+                    <div className="w-16 h-16 rounded-xl overflow-hidden bg-[#f5f5f3] flex-shrink-0 border border-border/30">
                       <img
                         src={item.image}
                         alt={item.name}
@@ -282,45 +360,57 @@ const Checkout = () => {
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm truncate">{item.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        Qty: {item.quantity}
+                      <p className="font-medium text-sm truncate font-[Jost]">{item.name}</p>
+                      <p className="text-xs text-muted-foreground font-[Jost] mt-0.5">
+                        Тоо: {item.quantity}
                       </p>
                     </div>
-                    <p className="font-medium text-sm">
-                      ${(parseFloat(item.price.replace("$", "")) * item.quantity).toFixed(2)}
+                    <p className="font-medium text-sm font-[Jost] whitespace-nowrap">
+                      {(parseFloat(item.price.replace(/[^0-9.]/g, "")) * item.quantity).toLocaleString()}₮
                     </p>
                   </div>
                 ))}
               </div>
 
-              <Separator className="my-4" />
+              <Separator className="my-4 bg-border/40" />
 
-              <div className="space-y-2 mb-6">
+              <div className="space-y-2.5 mb-6 font-[Jost]">
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Subtotal</span>
-                  <span>${cartTotal.toFixed(2)}</span>
+                  <span className="text-muted-foreground">Дүн</span>
+                  <span>{cartTotal.toLocaleString()}₮</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Shipping</span>
-                  <span>Free</span>
+                  <span className="text-muted-foreground">Хүргэлт</span>
+                  <span className="text-primary font-medium">Үнэгүй</span>
                 </div>
-                <Separator />
-                <div className="flex justify-between text-lg font-semibold">
-                  <span>Total</span>
-                  <span className="text-primary">${cartTotal.toFixed(2)}</span>
+                <Separator className="bg-border/40" />
+                <div className="flex justify-between text-xl font-semibold pt-1">
+                  <span>Нийт</span>
+                  <span className="text-primary">{cartTotal.toLocaleString()}₮</span>
                 </div>
               </div>
 
               <Button
                 size="lg"
-                className="w-full"
+                className="w-full h-14 rounded-xl text-base font-medium font-[Jost] shadow-md hover:shadow-lg transition-all"
                 onClick={handleSubmit}
                 disabled={isProcessing}
               >
-                {isProcessing ? "Processing..." : "Confirm Order"}
+                {isProcessing ? (
+                  <span className="flex items-center gap-2">
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Боловсруулж байна...
+                  </span>
+                ) : (
+                  "Захиалга баталгаажуулах"
+                )}
               </Button>
-            </Card>
+
+              <div className="flex items-center justify-center gap-1.5 mt-4 text-xs text-muted-foreground font-[Jost]">
+                <Shield className="w-3.5 h-3.5" />
+                <span>Аюулгүй төлбөр</span>
+              </div>
+            </div>
           </div>
         </div>
       </main>
