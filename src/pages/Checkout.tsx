@@ -16,7 +16,8 @@ import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { createManualOrder } from "@/lib/supabase";
-import { Mail, Phone, MapPin, User, CreditCard, ShoppingBag, ChevronLeft, Shield } from "lucide-react";
+import { Mail, Phone, MapPin, User, ShoppingBag, ChevronLeft, Shield } from "lucide-react";
+import PaymentModal from "@/components/PaymentModal";
 
 const Checkout = () => {
   const { items, cartTotal, clearCart } = useCart();
