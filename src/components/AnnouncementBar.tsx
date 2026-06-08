@@ -20,9 +20,9 @@ const AnnouncementBar = () => {
   const banner = banners[currentIndex];
 
   return (
-    <div className="bg-foreground text-background text-center py-2 px-4 text-xs tracking-[0.15em] uppercase relative">
-      {banner.link ? (
-        <a href={banner.link} className="hover:underline">
+    <div className="bg-foreground text-background text-center py-2 px-4 text-xs font-bold tracking-[0.15em] uppercase relative">
+      {banner.button_link ? (
+        <a href={banner.button_link} className="hover:underline">
           {banner.title}{banner.subtitle ? ` — ${banner.subtitle}` : ""}
         </a>
       ) : (

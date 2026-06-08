@@ -47,7 +47,7 @@ const PaymentModal = ({ open, onOpenChange, orderNumber, totalAmount }: PaymentM
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md rounded-2xl p-0 overflow-hidden border-border/40 font-[Jost]">
+      <DialogContent className="sm:max-w-md rounded-2xl p-0 overflow-hidden border-border/40 font-[Roboto]">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-20 px-6">
             <div className="w-12 h-12 border-3 border-primary/20 border-t-primary rounded-full animate-spin mb-5" />
@@ -57,7 +57,7 @@ const PaymentModal = ({ open, onOpenChange, orderNumber, totalAmount }: PaymentM
         ) : (
           <>
             <DialogHeader className="px-6 pt-6 pb-0">
-              <DialogTitle className="text-xl font-semibold font-[Jost] text-center">
+              <DialogTitle className="text-xl font-semibold font-[Roboto] text-center">
                 Төлбөр төлөх
               </DialogTitle>
               <p className="text-sm text-muted-foreground text-center mt-1">

@@ -28,7 +28,7 @@ export function useBanners() {
         .from("banners")
         .select("*")
         .eq("is_active", true)
-        .order("order_index", { ascending: true });
+        .order("display_order", { ascending: true });
 
       if (error) throw error;
       return (data as BannerRow[]) || [];

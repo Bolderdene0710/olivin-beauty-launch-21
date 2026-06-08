@@ -1,25 +1,30 @@
-// Database row type (matches Supabase schema)
+// Database row type (matches actual Supabase schema)
 export interface ProductRow {
   id: string;
   title: string;
-  brand: string;
   price: number;
+  sale_price: number | null;
+  sku: string | null;
+  barcode: string | null;
   image_url: string | null;
-  category: string;
-  category_id: string | null;
+  image_urls: string[] | null;
   description: string | null;
+  tags: string[] | null;
+  category_id: string | null;
+  stock_quantity: number;
+  is_active: boolean | null;
+  created_at: string | null;
+  updated_at: string | null;
+  brand: string | null;
   ingredients: string[] | null;
   how_to_use: string | null;
   benefits: string[] | null;
-  images: string[] | null;
-  badges: string[] | null;
-  stock_quantity: number;
-  is_active: boolean;
-  created_at: string | null;
+  // Joined from categories(name) via select("*, categories(name)")
+  categories?: { name: string } | null;
 }
 
-// Frontend product type
-export type ProductCategory = "Serums" | "Toners" | "Creams" | "Cleansers";
+// Category name is now dynamic (admin-managed), so it's just a string.
+export type ProductCategory = string;
 
 export interface Product {
   id: string;
@@ -29,7 +34,7 @@ export interface Product {
   priceNumber: number;
   image: string;
   images: string[];
-  category: ProductCategory;
+  category: string;
   categoryId: string | null;
   description: string;
   ingredients: string[];
@@ -38,6 +43,7 @@ export interface Product {
   badges: string[];
   stockQuantity: number;
   isActive: boolean;
+  createdAt: string | null;
   reviews: Review[];
 }
 
@@ -52,48 +58,45 @@ export interface Review {
 export interface CategoryRow {
   id: string;
   name: string;
-  slug: string;
-  image: string | null;
+  description: string | null;
+  image_url: string | null;
+  sort_order: number;
   is_active: boolean;
-  created_at: string;
+  created_at: string | null;
 }
 
 export interface BannerRow {
   id: string;
   title: string;
   subtitle: string | null;
-  image_url: string | null;
-  link: string | null;
+  image_url: string;
+  button_link: string | null;
   is_active: boolean;
-  order_index: number;
+  display_order: number;
   created_at: string;
 }
 
 const PLACEHOLDER_IMAGE = "/placeholder.svg";
 
 export function mapProductRowToProduct(row: ProductRow): Product {
-  const validCategories: ProductCategory[] = ["Serums", "Toners", "Creams", "Cleansers"];
-  const category = validCategories.includes(row.category as ProductCategory)
-    ? (row.category as ProductCategory)
-    : "Serums";
-
   return {
     id: row.id,
     name: row.title,
-    brand: row.brand,
+    brand: row.brand ?? "",
     price: `${row.price.toLocaleString()}₮`,
     priceNumber: row.price,
     image: row.image_url || PLACEHOLDER_IMAGE,
-    images: row.images || [],
-    category,
+    images: row.image_urls || [],
+    category: row.categories?.name ?? "",
     categoryId: row.category_id,
     description: row.description || "",
-    ingredients: row.ingredients || [],
-    howToUse: row.how_to_use || "",
-    benefits: row.benefits || [],
-    badges: row.badges || [],
+    ingredients: row.ingredients ?? [],
+    howToUse: row.how_to_use ?? "",
+    benefits: row.benefits ?? [],
+    badges: row.tags || [],
     stockQuantity: row.stock_quantity ?? 0,
     isActive: row.is_active ?? true,
+    createdAt: row.created_at,
     reviews: [],
   };
 }

@@ -1,8 +1,13 @@
 import { Link } from "react-router-dom";
 import { Instagram, Facebook, Youtube } from "lucide-react";
 import olivinLogo from "@/assets/olivin-logo.png";
+import { useStoreSettings } from "@/hooks/useStoreSettings";
 
 const Footer = () => {
+  const { data: storeSettings } = useStoreSettings();
+  const logoSrc = storeSettings?.logo_url || olivinLogo;
+  const storeName = storeSettings?.store_name || "Olivin";
+
   return (
     <footer className="bg-background border-t border-border">
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-14">
@@ -10,7 +15,14 @@ const Footer = () => {
           {/* Logo */}
           <div className="col-span-2 md:col-span-1">
             <Link to="/" className="inline-block">
-              <img src={olivinLogo} alt="Olivin" className="h-9 md:h-10 w-auto" />
+              <img
+                src={logoSrc}
+                alt={storeName}
+                className="h-9 md:h-10 w-auto object-contain"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src = olivinLogo;
+                }}
+              />
             </Link>
             <p className="text-xs text-muted-foreground mt-3 leading-relaxed max-w-[200px]">
               Солонгосын гоо сайхны бүтээгдэхүүнийг албан ёсны эрхтэйгээр хүргэж байна.

@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { z } from "zod";
 import { User, Session } from "@supabase/supabase-js";
 import { Mail, Lock, User as UserIcon } from "lucide-react";
+import { useStoreSettings } from "@/hooks/useStoreSettings";
 
 const emailSchema = z.string().trim().email({ message: "Имэйл хаяг буруу байна" });
 const passwordSchema = z.string().min(6, { message: "Нууц үг хамгийн багадаа 6 тэмдэгт байх ёстой" });
@@ -19,6 +20,9 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { data: storeSettings } = useStoreSettings();
+  const logoSrc = storeSettings?.logo_url || "/olivin-logo.png";
+  const storeName = storeSettings?.store_name || "Olivin Beauty";
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -119,20 +123,23 @@ const Auth = () => {
         {/* Logo */}
         <div className="flex justify-center mb-6">
           <img
-            src="/olivin-logo.png"
-            alt="Olivin Beauty"
-            className="h-12 w-auto cursor-pointer"
+            src={logoSrc}
+            alt={storeName}
+            className="h-12 w-auto object-contain cursor-pointer"
             onClick={() => navigate("/")}
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).src = "/olivin-logo.png";
+            }}
           />
         </div>
 
         {/* Card */}
         <div className="bg-white rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.06)] p-8">
           <div className="text-center mb-6">
-            <h1 className="text-xl font-semibold text-foreground font-['Jost']">
+            <h1 className="text-xl font-semibold text-foreground font-['Roboto']">
               Olivin Beauty-д тавтай морил! 🌿
             </h1>
-            <p className="text-sm text-muted-foreground mt-1 font-['Jost']">
+            <p className="text-sm text-muted-foreground mt-1 font-['Roboto']">
               Нэвтрэх эсвэл шинэ бүртгэл үүсгэх
             </p>
           </div>
@@ -141,13 +148,13 @@ const Auth = () => {
             <TabsList className="grid w-full grid-cols-2 mb-6 bg-[#f5f5f3] rounded-xl p-1">
               <TabsTrigger
                 value="signin"
-                className="rounded-lg font-['Jost'] text-sm data-[state=active]:bg-white data-[state=active]:shadow-sm"
+                className="rounded-lg font-['Roboto'] text-sm data-[state=active]:bg-white data-[state=active]:shadow-sm"
               >
                 Нэвтрэх
               </TabsTrigger>
               <TabsTrigger
                 value="signup"
-                className="rounded-lg font-['Jost'] text-sm data-[state=active]:bg-white data-[state=active]:shadow-sm"
+                className="rounded-lg font-['Roboto'] text-sm data-[state=active]:bg-white data-[state=active]:shadow-sm"
               >
                 Бүртгүүлэх
               </TabsTrigger>
@@ -156,7 +163,7 @@ const Auth = () => {
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-1.5">
-                  <Label htmlFor="signin-email" className="text-sm font-['Jost'] text-foreground/80">Имэйл</Label>
+                  <Label htmlFor="signin-email" className="text-sm font-['Roboto'] text-foreground/80">Имэйл</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -166,12 +173,12 @@ const Auth = () => {
                       placeholder="you@example.com"
                       required
                       disabled={loading}
-                      className="pl-10 h-12 rounded-xl border-border/60 bg-[#fafaf9] focus-visible:ring-[#7d9b6e] focus-visible:border-[#7d9b6e] font-['Jost'] text-sm"
+                      className="pl-10 h-12 rounded-xl border-border/60 bg-[#fafaf9] focus-visible:ring-[#7d9b6e] focus-visible:border-[#7d9b6e] font-['Roboto'] text-sm"
                     />
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="signin-password" className="text-sm font-['Jost'] text-foreground/80">Нууц үг</Label>
+                  <Label htmlFor="signin-password" className="text-sm font-['Roboto'] text-foreground/80">Нууц үг</Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -181,14 +188,14 @@ const Auth = () => {
                       placeholder="••••••••"
                       required
                       disabled={loading}
-                      className="pl-10 h-12 rounded-xl border-border/60 bg-[#fafaf9] focus-visible:ring-[#7d9b6e] focus-visible:border-[#7d9b6e] font-['Jost'] text-sm"
+                      className="pl-10 h-12 rounded-xl border-border/60 bg-[#fafaf9] focus-visible:ring-[#7d9b6e] focus-visible:border-[#7d9b6e] font-['Roboto'] text-sm"
                     />
                   </div>
                 </div>
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="w-full h-12 rounded-xl bg-[#7d9b6e] hover:bg-[#6b8a5e] text-white font-['Jost'] text-sm font-medium shadow-none"
+                  className="w-full h-12 rounded-xl bg-[#7d9b6e] hover:bg-[#6b8a5e] text-white font-['Roboto'] text-sm font-medium shadow-none"
                 >
                   {loading ? "Нэвтэрч байна..." : "Нэвтрэх"}
                 </Button>
@@ -198,7 +205,7 @@ const Auth = () => {
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-1.5">
-                  <Label htmlFor="username" className="text-sm font-['Jost'] text-foreground/80">Хэрэглэгчийн нэр</Label>
+                  <Label htmlFor="username" className="text-sm font-['Roboto'] text-foreground/80">Хэрэглэгчийн нэр</Label>
                   <div className="relative">
                     <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -207,12 +214,12 @@ const Auth = () => {
                       type="text"
                       placeholder="johndoe"
                       disabled={loading}
-                      className="pl-10 h-12 rounded-xl border-border/60 bg-[#fafaf9] focus-visible:ring-[#7d9b6e] focus-visible:border-[#7d9b6e] font-['Jost'] text-sm"
+                      className="pl-10 h-12 rounded-xl border-border/60 bg-[#fafaf9] focus-visible:ring-[#7d9b6e] focus-visible:border-[#7d9b6e] font-['Roboto'] text-sm"
                     />
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="signup-email" className="text-sm font-['Jost'] text-foreground/80">Имэйл</Label>
+                  <Label htmlFor="signup-email" className="text-sm font-['Roboto'] text-foreground/80">Имэйл</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -222,12 +229,12 @@ const Auth = () => {
                       placeholder="you@example.com"
                       required
                       disabled={loading}
-                      className="pl-10 h-12 rounded-xl border-border/60 bg-[#fafaf9] focus-visible:ring-[#7d9b6e] focus-visible:border-[#7d9b6e] font-['Jost'] text-sm"
+                      className="pl-10 h-12 rounded-xl border-border/60 bg-[#fafaf9] focus-visible:ring-[#7d9b6e] focus-visible:border-[#7d9b6e] font-['Roboto'] text-sm"
                     />
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="signup-password" className="text-sm font-['Jost'] text-foreground/80">Нууц үг</Label>
+                  <Label htmlFor="signup-password" className="text-sm font-['Roboto'] text-foreground/80">Нууц үг</Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -237,15 +244,15 @@ const Auth = () => {
                       placeholder="••••••••"
                       required
                       disabled={loading}
-                      className="pl-10 h-12 rounded-xl border-border/60 bg-[#fafaf9] focus-visible:ring-[#7d9b6e] focus-visible:border-[#7d9b6e] font-['Jost'] text-sm"
+                      className="pl-10 h-12 rounded-xl border-border/60 bg-[#fafaf9] focus-visible:ring-[#7d9b6e] focus-visible:border-[#7d9b6e] font-['Roboto'] text-sm"
                     />
                   </div>
-                  <p className="text-xs text-muted-foreground font-['Jost']">Хамгийн багадаа 6 тэмдэгт</p>
+                  <p className="text-xs text-muted-foreground font-['Roboto']">Хамгийн багадаа 6 тэмдэгт</p>
                 </div>
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="w-full h-12 rounded-xl bg-[#7d9b6e] hover:bg-[#6b8a5e] text-white font-['Jost'] text-sm font-medium shadow-none"
+                  className="w-full h-12 rounded-xl bg-[#7d9b6e] hover:bg-[#6b8a5e] text-white font-['Roboto'] text-sm font-medium shadow-none"
                 >
                   {loading ? "Бүртгэж байна..." : "Бүртгүүлэх"}
                 </Button>
@@ -256,7 +263,7 @@ const Auth = () => {
           {/* Divider */}
           <div className="flex items-center gap-3 my-6">
             <div className="flex-1 h-px bg-border/60" />
-            <span className="text-xs text-muted-foreground font-['Jost']">Эсвэл</span>
+            <span className="text-xs text-muted-foreground font-['Roboto']">Эсвэл</span>
             <div className="flex-1 h-px bg-border/60" />
           </div>
 
@@ -264,7 +271,7 @@ const Auth = () => {
           <div className="space-y-3">
             <button
               type="button"
-              className="w-full h-12 rounded-xl border border-border/60 bg-white hover:bg-[#fafaf9] flex items-center justify-center gap-3 text-sm font-['Jost'] text-foreground/80 transition-colors"
+              className="w-full h-12 rounded-xl border border-border/60 bg-white hover:bg-[#fafaf9] flex items-center justify-center gap-3 text-sm font-['Roboto'] text-foreground/80 transition-colors"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
@@ -276,7 +283,7 @@ const Auth = () => {
             </button>
             <button
               type="button"
-              className="w-full h-12 rounded-xl border border-border/60 bg-white hover:bg-[#fafaf9] flex items-center justify-center gap-3 text-sm font-['Jost'] text-foreground/80 transition-colors"
+              className="w-full h-12 rounded-xl border border-border/60 bg-white hover:bg-[#fafaf9] flex items-center justify-center gap-3 text-sm font-['Roboto'] text-foreground/80 transition-colors"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="#1877F2">
                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
@@ -289,7 +296,7 @@ const Auth = () => {
           <div className="mt-6 text-center">
             <button
               onClick={() => navigate("/")}
-              className="text-xs text-muted-foreground hover:text-foreground font-['Jost'] transition-colors"
+              className="text-xs text-muted-foreground hover:text-foreground font-['Roboto'] transition-colors"
             >
               Зочноор үргэлжлүүлэх →
             </button>

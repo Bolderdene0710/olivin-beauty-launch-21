@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { WishlistButton } from "@/components/WishlistButton";
 
 interface ProductCardProps {
   id: string;
@@ -11,24 +11,26 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ id, image, name, brand, price }: ProductCardProps) => {
-  const { toast } = useToast();
   const navigate = useNavigate();
-  
+
   const handleClick = () => {
     navigate(`/product/${id}`);
   };
-  
+
   return (
-    <Card 
+    <Card
       className="group overflow-hidden border-border hover:border-primary transition-all duration-300 hover:shadow-xl min-w-[280px] bg-card cursor-pointer"
       onClick={handleClick}
     >
-      <div className="aspect-square overflow-hidden bg-muted">
+      <div className="aspect-square overflow-hidden bg-muted relative">
         <img
           src={image}
           alt={name}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
         />
+        <div className="absolute top-3 right-3 z-10">
+          <WishlistButton productId={id} productName={name} />
+        </div>
       </div>
       <div className="p-6 space-y-2">
         <p className="text-sm text-muted-foreground uppercase tracking-wider">

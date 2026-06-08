@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCart } from "@/contexts/CartContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,8 +15,8 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { createManualOrder } from "@/lib/supabase";
-import { Mail, Phone, MapPin, User, ShoppingBag, ChevronLeft, Shield } from "lucide-react";
+import { createManualOrder, supabase } from "@/lib/supabase";
+import { Mail, Phone, MapPin, User, ShoppingBag, ChevronLeft, Shield, CheckCircle2 } from "lucide-react";
 import PaymentModal from "@/components/PaymentModal";
 
 const Checkout = () => {
@@ -26,6 +26,8 @@ const Checkout = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [orderNumber, setOrderNumber] = useState("");
+  const [paidAmount, setPaidAmount] = useState(0);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const [formData, setFormData] = useState({
     email: "",
@@ -38,13 +40,54 @@ const Checkout = () => {
     phoneNumber: "",
   });
 
+  // Prefill from logged-in user's session + profile
+  useEffect(() => {
+    let active = true;
+    const prefillFromSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!active || !session?.user) return;
+
+      const email = session.user.email ?? "";
+      setIsLoggedIn(true);
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name, phone_number, home_address")
+        .eq("id", session.user.id)
+        .maybeSingle();
+
+      if (!active) return;
+
+      const parts = (profile?.full_name ?? "").trim().split(/\s+/).filter(Boolean);
+      const surname = parts[0] ?? "";
+      const givenName = parts.slice(1).join(" ");
+
+      setFormData((prev) => ({
+        ...prev,
+        email: prev.email || email,
+        firstName: prev.firstName || surname,
+        lastName: prev.lastName || givenName,
+        phoneNumber: prev.phoneNumber || (profile?.phone_number ?? ""),
+        detailedAddress:
+          prev.detailedAddress || (profile?.home_address ?? ""),
+      }));
+    };
+
+    prefillFromSession();
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const mongolianDistricts = [
-    "Bayanzurkh",
-    "Sukhbaatar",
-    "Khan-Uul",
-    "Bayangol",
-    "Songinokhairkhan",
-    "Chingeltei",
+    "Баянзүрх",
+    "Сүхбаатар",
+    "Хан-Уул",
+    "Баянгол",
+    "Сонгинохайрхан",
+    "Чингэлтэй",
   ];
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,6 +104,12 @@ const Checkout = () => {
     });
   };
 
+  useEffect(() => {
+    if (items.length === 0 && !showPaymentModal) {
+      navigate("/cart");
+    }
+  }, [items.length, showPaymentModal, navigate]);
+
   const handleSubmit = async () => {
     if (!formData.email || !formData.firstName || !formData.lastName || !formData.phoneNumber || !formData.district || !formData.khoroo || !formData.detailedAddress) {
       toast({ title: "Бүх талбарыг бөглөнө үү", variant: "destructive" });
@@ -70,6 +119,7 @@ const Checkout = () => {
     setIsProcessing(true);
     try {
       const newOrderNumber = `ORD${Date.now()}${Math.floor(Math.random() * 1000)}`;
+      const snapshotTotal = cartTotal;
 
       await createManualOrder({
         order_number: newOrderNumber,
@@ -79,7 +129,7 @@ const Checkout = () => {
         district: formData.district,
         khoroo: formData.khoroo,
         detailed_address: formData.detailedAddress,
-        total_amount: cartTotal,
+        total_amount: snapshotTotal,
         status: "pending",
         items: items.map(item => ({
           id: item.id,
@@ -90,6 +140,7 @@ const Checkout = () => {
       });
 
       setOrderNumber(newOrderNumber);
+      setPaidAmount(snapshotTotal);
       setShowPaymentModal(true);
       clearCart();
     } catch (error: any) {
@@ -103,8 +154,7 @@ const Checkout = () => {
     }
   };
 
-  if (items.length === 0) {
-    navigate("/cart");
+  if (items.length === 0 && !showPaymentModal) {
     return null;
   }
 
@@ -115,16 +165,16 @@ const Checkout = () => {
         {/* Back button */}
         <button
           onClick={() => navigate("/cart")}
-          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6 font-[Jost]"
+          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6 font-[Roboto]"
         >
           <ChevronLeft className="w-4 h-4" />
           Сагс руу буцах
         </button>
 
-        <h1 className="text-3xl md:text-4xl font-light tracking-wide mb-2 font-[Cormorant_Garamond]">
+        <h1 className="text-3xl md:text-4xl font-light tracking-wide mb-2 font-[Fraunces]">
           Захиалга баталгаажуулах
         </h1>
-        <p className="text-muted-foreground text-sm mb-8 font-[Jost]">
+        <p className="text-muted-foreground text-sm mb-8 font-[Roboto]">
           Мэдээллээ бөглөөд захиалгаа баталгаажуулна уу
         </p>
 
@@ -134,14 +184,22 @@ const Checkout = () => {
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Contact Information */}
               <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-border/40">
-                <div className="flex items-center gap-2.5 mb-5">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Mail className="w-4 h-4 text-primary" />
+                <div className="flex items-center justify-between gap-3 mb-5">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Mail className="w-4 h-4 text-primary" />
+                    </div>
+                    <h2 className="text-lg font-medium font-[Roboto]">Холбоо барих мэдээлэл</h2>
                   </div>
-                  <h2 className="text-lg font-medium font-[Jost]">Холбоо барих мэдээлэл</h2>
+                  {isLoggedIn && (
+                    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-primary bg-primary/10 px-2.5 py-1 rounded-full font-[Roboto]">
+                      <CheckCircle2 className="w-3 h-3" />
+                      Нэвтэрсэн
+                    </span>
+                  )}
                 </div>
                 <div>
-                  <Label htmlFor="email" className="text-xs uppercase tracking-wider text-muted-foreground font-[Jost] mb-1.5 block">
+                  <Label htmlFor="email" className="text-xs uppercase tracking-wider text-muted-foreground font-[Roboto] mb-1.5 block">
                     Имэйл хаяг
                   </Label>
                   <div className="relative">
@@ -154,9 +212,17 @@ const Checkout = () => {
                       value={formData.email}
                       onChange={handleInputChange}
                       placeholder="you@example.com"
-                      className="pl-10 h-12 rounded-xl border-border/60 bg-[#f5f5f3]/50 focus:ring-2 focus:ring-primary/30 focus:border-primary font-[Jost]"
+                      readOnly={isLoggedIn}
+                      className={`pl-10 h-12 rounded-xl border-border/60 bg-[#f5f5f3]/50 focus:ring-2 focus:ring-primary/30 focus:border-primary font-[Roboto] ${
+                        isLoggedIn ? "cursor-not-allowed text-muted-foreground" : ""
+                      }`}
                     />
                   </div>
+                  {isLoggedIn && (
+                    <p className="text-[11px] text-muted-foreground mt-1.5 font-[Roboto]">
+                      Нэвтэрсэн хэрэглэгчийн имэйлээр захиалга илгээгдэнэ
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -166,12 +232,12 @@ const Checkout = () => {
                   <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                     <MapPin className="w-4 h-4 text-primary" />
                   </div>
-                  <h2 className="text-lg font-medium font-[Jost]">Хүргэлтийн хаяг</h2>
+                  <h2 className="text-lg font-medium font-[Roboto]">Хүргэлтийн хаяг</h2>
                 </div>
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="firstName" className="text-xs uppercase tracking-wider text-muted-foreground font-[Jost] mb-1.5 block">
+                      <Label htmlFor="firstName" className="text-xs uppercase tracking-wider text-muted-foreground font-[Roboto] mb-1.5 block">
                         Овог
                       </Label>
                       <div className="relative">
@@ -182,12 +248,12 @@ const Checkout = () => {
                           required
                           value={formData.firstName}
                           onChange={handleInputChange}
-                          className="pl-10 h-12 rounded-xl border-border/60 bg-[#f5f5f3]/50 focus:ring-2 focus:ring-primary/30 focus:border-primary font-[Jost]"
+                          className="pl-10 h-12 rounded-xl border-border/60 bg-[#f5f5f3]/50 focus:ring-2 focus:ring-primary/30 focus:border-primary font-[Roboto]"
                         />
                       </div>
                     </div>
                     <div>
-                      <Label htmlFor="lastName" className="text-xs uppercase tracking-wider text-muted-foreground font-[Jost] mb-1.5 block">
+                      <Label htmlFor="lastName" className="text-xs uppercase tracking-wider text-muted-foreground font-[Roboto] mb-1.5 block">
                         Нэр
                       </Label>
                       <div className="relative">
@@ -198,14 +264,14 @@ const Checkout = () => {
                           required
                           value={formData.lastName}
                           onChange={handleInputChange}
-                          className="pl-10 h-12 rounded-xl border-border/60 bg-[#f5f5f3]/50 focus:ring-2 focus:ring-primary/30 focus:border-primary font-[Jost]"
+                          className="pl-10 h-12 rounded-xl border-border/60 bg-[#f5f5f3]/50 focus:ring-2 focus:ring-primary/30 focus:border-primary font-[Roboto]"
                         />
                       </div>
                     </div>
                   </div>
 
                   <div>
-                    <Label htmlFor="phoneNumber" className="text-xs uppercase tracking-wider text-muted-foreground font-[Jost] mb-1.5 block">
+                    <Label htmlFor="phoneNumber" className="text-xs uppercase tracking-wider text-muted-foreground font-[Roboto] mb-1.5 block">
                       Утасны дугаар
                     </Label>
                     <div className="relative">
@@ -218,13 +284,13 @@ const Checkout = () => {
                         value={formData.phoneNumber}
                         onChange={handleInputChange}
                         placeholder="+976 99123456"
-                        className="pl-10 h-12 rounded-xl border-border/60 bg-[#f5f5f3]/50 focus:ring-2 focus:ring-primary/30 focus:border-primary font-[Jost]"
+                        className="pl-10 h-12 rounded-xl border-border/60 bg-[#f5f5f3]/50 focus:ring-2 focus:ring-primary/30 focus:border-primary font-[Roboto]"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <Label htmlFor="city" className="text-xs uppercase tracking-wider text-muted-foreground font-[Jost] mb-1.5 block">
+                    <Label htmlFor="city" className="text-xs uppercase tracking-wider text-muted-foreground font-[Roboto] mb-1.5 block">
                       Хот
                     </Label>
                     <Input
@@ -234,13 +300,13 @@ const Checkout = () => {
                       value={formData.city}
                       onChange={handleInputChange}
                       placeholder="Улаанбаатар"
-                      className="h-12 rounded-xl border-border/60 bg-[#f5f5f3]/50 focus:ring-2 focus:ring-primary/30 focus:border-primary font-[Jost]"
+                      className="h-12 rounded-xl border-border/60 bg-[#f5f5f3]/50 focus:ring-2 focus:ring-primary/30 focus:border-primary font-[Roboto]"
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="district" className="text-xs uppercase tracking-wider text-muted-foreground font-[Jost] mb-1.5 block">
+                      <Label htmlFor="district" className="text-xs uppercase tracking-wider text-muted-foreground font-[Roboto] mb-1.5 block">
                         Дүүрэг
                       </Label>
                       <Select
@@ -248,10 +314,10 @@ const Checkout = () => {
                         onValueChange={(value) => handleSelectChange("district", value)}
                         required
                       >
-                        <SelectTrigger className="h-12 rounded-xl border-border/60 bg-[#f5f5f3]/50 focus:ring-2 focus:ring-primary/30 focus:border-primary font-[Jost]">
+                        <SelectTrigger className="h-12 rounded-xl border-border/60 bg-[#f5f5f3]/50 focus:ring-2 focus:ring-primary/30 focus:border-primary font-[Roboto]">
                           <SelectValue placeholder="Дүүрэг сонгох" />
                         </SelectTrigger>
-                        <SelectContent className="bg-white z-50 rounded-xl font-[Jost]">
+                        <SelectContent className="bg-white z-50 rounded-xl font-[Roboto]">
                           {mongolianDistricts.map((district) => (
                             <SelectItem key={district} value={district}>
                               {district}
@@ -261,7 +327,7 @@ const Checkout = () => {
                       </Select>
                     </div>
                     <div>
-                      <Label htmlFor="khoroo" className="text-xs uppercase tracking-wider text-muted-foreground font-[Jost] mb-1.5 block">
+                      <Label htmlFor="khoroo" className="text-xs uppercase tracking-wider text-muted-foreground font-[Roboto] mb-1.5 block">
                         Хороо
                       </Label>
                       <Input
@@ -273,13 +339,13 @@ const Checkout = () => {
                         onChange={handleInputChange}
                         placeholder="1"
                         min="1"
-                        className="h-12 rounded-xl border-border/60 bg-[#f5f5f3]/50 focus:ring-2 focus:ring-primary/30 focus:border-primary font-[Jost]"
+                        className="h-12 rounded-xl border-border/60 bg-[#f5f5f3]/50 focus:ring-2 focus:ring-primary/30 focus:border-primary font-[Roboto]"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <Label htmlFor="detailedAddress" className="text-xs uppercase tracking-wider text-muted-foreground font-[Jost] mb-1.5 block">
+                    <Label htmlFor="detailedAddress" className="text-xs uppercase tracking-wider text-muted-foreground font-[Roboto] mb-1.5 block">
                       Дэлгэрэнгүй хаяг
                     </Label>
                     <Input
@@ -289,7 +355,7 @@ const Checkout = () => {
                       value={formData.detailedAddress}
                       onChange={handleInputChange}
                       placeholder="Байр 5, Тоот 12"
-                      className="h-12 rounded-xl border-border/60 bg-[#f5f5f3]/50 focus:ring-2 focus:ring-primary/30 focus:border-primary font-[Jost]"
+                      className="h-12 rounded-xl border-border/60 bg-[#f5f5f3]/50 focus:ring-2 focus:ring-primary/30 focus:border-primary font-[Roboto]"
                     />
                   </div>
                 </div>
@@ -305,7 +371,7 @@ const Checkout = () => {
                 <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                   <ShoppingBag className="w-4 h-4 text-primary" />
                 </div>
-                <h2 className="text-lg font-medium font-[Jost]">Захиалгын хураангуй</h2>
+                <h2 className="text-lg font-medium font-[Roboto]">Захиалгын хураангуй</h2>
               </div>
 
               <div className="space-y-4 mb-6">
@@ -319,12 +385,12 @@ const Checkout = () => {
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm truncate font-[Jost]">{item.name}</p>
-                      <p className="text-xs text-muted-foreground font-[Jost] mt-0.5">
+                      <p className="font-medium text-sm truncate font-[Roboto]">{item.name}</p>
+                      <p className="text-xs text-muted-foreground font-[Roboto] mt-0.5">
                         Тоо: {item.quantity}
                       </p>
                     </div>
-                    <p className="font-medium text-sm font-[Jost] whitespace-nowrap">
+                    <p className="font-medium text-sm font-[Roboto] whitespace-nowrap">
                       {(parseFloat(item.price.replace(/[^0-9.]/g, "")) * item.quantity).toLocaleString()}₮
                     </p>
                   </div>
@@ -333,7 +399,7 @@ const Checkout = () => {
 
               <Separator className="my-4 bg-border/40" />
 
-              <div className="space-y-2.5 mb-6 font-[Jost]">
+              <div className="space-y-2.5 mb-6 font-[Roboto]">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Дүн</span>
                   <span>{cartTotal.toLocaleString()}₮</span>
@@ -351,7 +417,7 @@ const Checkout = () => {
 
               <Button
                 size="lg"
-                className="w-full h-14 rounded-xl text-base font-medium font-[Jost] shadow-md hover:shadow-lg transition-all"
+                className="w-full h-14 rounded-xl text-base font-medium font-[Roboto] shadow-md hover:shadow-lg transition-all"
                 onClick={handleSubmit}
                 disabled={isProcessing}
               >
@@ -365,7 +431,7 @@ const Checkout = () => {
                 )}
               </Button>
 
-              <div className="flex items-center justify-center gap-1.5 mt-4 text-xs text-muted-foreground font-[Jost]">
+              <div className="flex items-center justify-center gap-1.5 mt-4 text-xs text-muted-foreground font-[Roboto]">
                 <Shield className="w-3.5 h-3.5" />
                 <span>Аюулгүй төлбөр</span>
               </div>
@@ -377,9 +443,12 @@ const Checkout = () => {
 
       <PaymentModal
         open={showPaymentModal}
-        onOpenChange={setShowPaymentModal}
+        onOpenChange={(open) => {
+          setShowPaymentModal(open);
+          if (!open) navigate("/track-order");
+        }}
         orderNumber={orderNumber}
-        totalAmount={cartTotal}
+        totalAmount={paidAmount}
       />
     </div>
   );

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,700;1,300;1,400&family=Jost:wght@200;300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400&family=Roboto:wght@300;400;500;600;700&display=swap&subset=cyrillic');
 
 @tailwind base;
 @tailwind components;
@@ -59,13 +59,17 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: 'Jost', sans-serif;
+    font-family: 'Roboto', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
   .font-serif-display {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Fraunces', 'Roboto', Georgia, serif;
+    font-feature-settings: 'ss01';
   }
   .font-body {
-    font-family: 'Jost', sans-serif;
+    font-family: 'Roboto', system-ui, sans-serif;
   }
 }
 

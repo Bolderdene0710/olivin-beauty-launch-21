@@ -27,7 +27,7 @@ export function useProducts() {
     queryFn: async (): Promise<Product[]> => {
       const { data, error } = await (supabase as any)
         .from("products")
-        .select("*")
+        .select("*, categories(name)")
         .eq("is_active", true);
 
       if (error) throw error;
@@ -43,7 +43,7 @@ export function useProductById(id: string) {
     queryFn: async (): Promise<Product | null> => {
       const { data, error } = await (supabase as any)
         .from("products")
-        .select("*")
+        .select("*, categories(name)")
         .eq("id", id)
         .maybeSingle();
 
@@ -61,7 +61,7 @@ export function useProductsByCategory(category: ProductCategory | "All") {
     queryFn: async (): Promise<Product[]> => {
       const { data, error } = await (supabase as any)
         .from("products")
-        .select("*")
+        .select("*, categories(name)")
         .eq("is_active", true);
 
       if (error) throw error;
@@ -69,7 +69,12 @@ export function useProductsByCategory(category: ProductCategory | "All") {
 
       const allProducts = (data as unknown as ProductRow[]).map(mapProductRowToProduct);
       if (category === "All") return allProducts;
-      return allProducts.filter(p => p.category === category);
+      const target = category.toLowerCase();
+      return allProducts.filter(
+        (p) =>
+          (p.category && p.category.toLowerCase() === target) ||
+          p.categoryId === category
+      );
     },
   });
 }

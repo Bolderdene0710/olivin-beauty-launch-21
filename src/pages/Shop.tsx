@@ -1,7 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Search } from "lucide-react";
-import { ProductCategory } from "@/types/product";
 import { useProducts } from "@/hooks/useProducts";
 import { useCategories } from "@/hooks/useCategories";
 import { useCart } from "@/contexts/CartContext";
@@ -12,6 +11,7 @@ import AnnouncementBar from "@/components/AnnouncementBar";
 import Footer from "@/components/Footer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { WishlistButton } from "@/components/WishlistButton";
 
 const btnColors = [
   "bg-[hsl(70,90%,63%)]",
@@ -30,18 +30,29 @@ const Shop = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  type FilterPill = "All" | string;
-  const filterPills: FilterPill[] = ["All", ...categories.map(c => c.name)];
+  const filterPills: string[] = ["All", ...categories.map((c) => c.name)];
 
-  const initialCategory = searchParams.get("category") || "All";
-  const [activeFilter, setActiveFilter] = useState<string>(initialCategory);
+  // Header navigates with ?cat=<name>; legacy ?category= also supported.
+  const urlCat = searchParams.get("cat") || searchParams.get("category") || "All";
+  const [activeFilter, setActiveFilter] = useState<string>(urlCat);
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Keep filter in sync if user clicks a different category in the header
+  useEffect(() => {
+    setActiveFilter(urlCat);
+  }, [urlCat]);
 
   const filteredProducts = useMemo(() => {
     let filtered = products;
 
     if (activeFilter !== "All") {
-      filtered = filtered.filter((p) => p.category === activeFilter);
+      // Match either by category name (joined from categories table) or by id
+      const target = activeFilter.toLowerCase();
+      filtered = filtered.filter(
+        (p) =>
+          (p.category && p.category.toLowerCase() === target) ||
+          p.categoryId === activeFilter
+      );
     }
 
     if (searchQuery.trim()) {
@@ -49,7 +60,7 @@ const Shop = () => {
       filtered = filtered.filter(
         (p) =>
           p.name.toLowerCase().includes(q) ||
-          p.brand.toLowerCase().includes(q)
+          (p.brand ?? "").toLowerCase().includes(q)
       );
     }
 
@@ -186,6 +197,10 @@ const Shop = () => {
                     className="bg-card relative p-6 cursor-pointer"
                     onClick={() => navigate(`/product/${product.id}`)}
                   >
+                    <div className="absolute top-4 right-4 z-10">
+                      <WishlistButton productId={product.id} productName={product.name} />
+                    </div>
+
                     {/* Tags */}
                     {product.badges.length > 0 && (
                       <div className="flex gap-2 mb-3">

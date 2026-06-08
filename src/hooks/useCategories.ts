@@ -26,8 +26,9 @@ export function useCategories() {
     queryFn: async (): Promise<CategoryRow[]> => {
       const { data, error } = await (supabase as any)
         .from("categories")
-        .select("*")
+        .select("id, name, description, image_url, sort_order, is_active, created_at")
         .eq("is_active", true)
+        .order("sort_order", { ascending: true })
         .order("name", { ascending: true });
 
       if (error) throw error;
