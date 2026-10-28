@@ -445,7 +445,7 @@ const Checkout = () => {
         open={showPaymentModal}
         onOpenChange={(open) => {
           setShowPaymentModal(open);
-          if (!open) navigate("/track-order");
+          if (!open) navigate(`/track-order?order=${orderNumber}`);
         }}
         orderNumber={orderNumber}
         totalAmount={paidAmount}

@@ -155,7 +155,7 @@ const Header = () => {
             <img
               src={logoSrc}
               alt={storeName}
-              className="h-9 md:h-11 w-auto object-contain"
+              className="h-6 md:h-7 w-auto object-contain"
               onError={(e) => {
                 (e.currentTarget as HTMLImageElement).src = olivinLogo;
               }}

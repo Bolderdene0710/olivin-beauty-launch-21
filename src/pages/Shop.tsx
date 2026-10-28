@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
-import { motion } from "framer-motion";
-import { Search } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Search, X, ShoppingBag, SlidersHorizontal, Sparkles, ChevronDown } from "lucide-react";
 import { useProducts } from "@/hooks/useProducts";
 import { useCategories } from "@/hooks/useCategories";
 import { useCart } from "@/contexts/CartContext";
@@ -10,17 +10,33 @@ import Header from "@/components/Header";
 import AnnouncementBar from "@/components/AnnouncementBar";
 import Footer from "@/components/Footer";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
 import { WishlistButton } from "@/components/WishlistButton";
+import type { Product } from "@/types/product";
 
-const btnColors = [
-  "bg-[hsl(70,90%,63%)]",
-  "bg-pastel-pink",
-  "bg-pastel-mint",
-  "bg-pastel-peach",
-  "bg-pastel-lilac",
-  "bg-pastel-yellow",
+const ALL = "All";
+const NEW_ARRIVALS_LIMIT = 12;
+const NEW_BADGE_DAYS = 30;
+
+type SortKey = "featured" | "newest" | "price-asc" | "price-desc";
+
+const SORT_OPTIONS: { value: SortKey; label: string }[] = [
+  { value: "featured", label: "Санал болгох" },
+  { value: "newest", label: "Шинэ эхэндээ" },
+  { value: "price-asc", label: "Үнэ: бага → их" },
+  { value: "price-desc", label: "Үнэ: их → бага" },
 ];
+
+const PRICE_RANGES = [
+  { value: "u30", label: "30,000₮ хүртэл", min: 0, max: 30000 },
+  { value: "30-60", label: "30,000 – 60,000₮", min: 30000, max: 60000 },
+  { value: "60-100", label: "60,000 – 100,000₮", min: 60000, max: 100000 },
+  { value: "100+", label: "100,000₮-с дээш", min: 100000, max: Infinity },
+];
+
+const createdTime = (p: Product) => (p.createdAt ? new Date(p.createdAt).getTime() : 0);
+
+const isRecent = (p: Product) =>
+  !!p.createdAt && Date.now() - createdTime(p) < NEW_BADGE_DAYS * 24 * 60 * 60 * 1000;
 
 const Shop = () => {
   const { data: products = [], isLoading, error } = useProducts();
@@ -28,24 +44,64 @@ const Shop = () => {
   const { addItem } = useCart();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const filterPills: string[] = ["All", ...categories.map((c) => c.name)];
+  // URL is the source of truth: Header search sends ?q=, Header categories send ?cat=,
+  // Footer "Шинэ" sends ?filter=new.
+  const urlQuery = searchParams.get("q") ?? "";
+  const activeFilter = searchParams.get("cat") || searchParams.get("category") || ALL;
+  const showNewOnly = searchParams.get("filter") === "new";
+  const activeBrand = searchParams.get("brand") ?? "";
+  const activeTag = searchParams.get("tag") ?? "";
+  const activePrice = searchParams.get("price") ?? "";
 
-  // Header navigates with ?cat=<name>; legacy ?category= also supported.
-  const urlCat = searchParams.get("cat") || searchParams.get("category") || "All";
-  const [activeFilter, setActiveFilter] = useState<string>(urlCat);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchInput, setSearchInput] = useState(urlQuery);
+  const [sort, setSort] = useState<SortKey>(showNewOnly ? "newest" : "featured");
 
-  // Keep filter in sync if user clicks a different category in the header
+  useEffect(() => setSearchInput(urlQuery), [urlQuery]);
   useEffect(() => {
-    setActiveFilter(urlCat);
-  }, [urlCat]);
+    if (showNewOnly) setSort("newest");
+  }, [showNewOnly]);
+
+  const updateParams = (patch: Record<string, string | null>) => {
+    const next = new URLSearchParams(searchParams);
+    Object.entries(patch).forEach(([key, value]) => {
+      if (value) next.set(key, value);
+      else next.delete(key);
+    });
+    next.delete("category");
+    setSearchParams(next, { replace: true });
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateParams({ q: searchInput.trim() || null });
+  };
+
+  const filterPills: string[] = [ALL, ...categories.map((c) => c.name)];
+
+  // Brand and need (tag) options come from the catalog itself, so they never point at empty results.
+  const brandOptions = useMemo(
+    () => [...new Set(products.map((p) => p.brand).filter(Boolean))].sort((a, b) => a.localeCompare(b)),
+    [products]
+  );
+  const tagOptions = useMemo(
+    () => [...new Set(products.flatMap((p) => p.badges))].sort((a, b) => a.localeCompare(b)),
+    [products]
+  );
 
   const filteredProducts = useMemo(() => {
     let filtered = products;
 
-    if (activeFilter !== "All") {
+    if (activeBrand) filtered = filtered.filter((p) => p.brand === activeBrand);
+    if (activeTag) filtered = filtered.filter((p) => p.badges.includes(activeTag));
+
+    const priceRange = PRICE_RANGES.find((r) => r.value === activePrice);
+    if (priceRange) {
+      filtered = filtered.filter((p) => p.priceNumber >= priceRange.min && p.priceNumber < priceRange.max);
+    }
+
+    if (activeFilter !== ALL) {
       // Match either by category name (joined from categories table) or by id
       const target = activeFilter.toLowerCase();
       filtered = filtered.filter(
@@ -55,219 +111,261 @@ const Shop = () => {
       );
     }
 
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
+    if (urlQuery.trim()) {
+      const q = urlQuery.toLowerCase();
       filtered = filtered.filter(
         (p) =>
           p.name.toLowerCase().includes(q) ||
-          (p.brand ?? "").toLowerCase().includes(q)
+          (p.brand ?? "").toLowerCase().includes(q) ||
+          (p.category ?? "").toLowerCase().includes(q)
       );
     }
 
-    return filtered;
-  }, [products, activeFilter, searchQuery]);
+    const sorted = [...filtered];
+    if (sort === "newest" || showNewOnly) sorted.sort((a, b) => createdTime(b) - createdTime(a));
+    else if (sort === "price-asc") sorted.sort((a, b) => a.priceNumber - b.priceNumber);
+    else if (sort === "price-desc") sorted.sort((a, b) => b.priceNumber - a.priceNumber);
+
+    return showNewOnly ? sorted.slice(0, NEW_ARRIVALS_LIMIT) : sorted;
+  }, [products, activeFilter, urlQuery, sort, showNewOnly, activeBrand, activeTag, activePrice]);
+
+  const hasActiveFilters =
+    activeFilter !== ALL || !!urlQuery || showNewOnly || !!activeBrand || !!activeTag || !!activePrice;
+
+  const handleAdd = (product: Product) => {
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image,
+    });
+    toast({ title: "Сагсанд нэмлээ!", description: product.name });
+  };
 
   return (
     <div className="min-h-screen bg-background">
       <AnnouncementBar />
       <Header />
 
-      {/* Hero / Search Section */}
-      <section className="relative pt-28 pb-16 px-4 overflow-hidden">
-        {/* Pastel gradient bg */}
-        <div className="absolute inset-0 bg-gradient-to-b from-pastel-lilac/40 via-pastel-peach/20 to-background" />
-
-        {/* Floating shapes */}
+      {/* Hero */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,hsl(var(--sage-light)/0.45),transparent_55%),radial-gradient(ellipse_at_bottom_right,hsl(30_60%_88%/0.6),transparent_60%)]" />
         <motion.div
-          className="absolute top-16 left-[8%] w-20 h-20 rounded-full bg-pastel-pink/30 backdrop-blur-sm"
-          animate={{ y: [0, -15, 0] }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="absolute top-24 right-[12%] w-14 h-14 rounded-full bg-pastel-mint/30 backdrop-blur-sm"
-          animate={{ y: [0, -20, 0] }}
-          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-        />
-        <motion.div
-          className="absolute bottom-8 left-[20%] w-10 h-10 rounded-full bg-pastel-yellow/30 backdrop-blur-sm"
-          animate={{ y: [0, -10, 0] }}
-          transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+          aria-hidden
+          className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-primary/10 blur-3xl"
+          animate={{ scale: [1, 1.15, 1] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
         />
 
-        <div className="relative z-10 max-w-3xl mx-auto">
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
+        <div className="relative max-w-6xl mx-auto px-4 md:px-8 pt-14 pb-12 md:pt-20 md:pb-16">
+          <motion.p
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="font-display text-4xl md:text-6xl uppercase text-center text-foreground mb-8"
+            className="inline-flex items-center gap-2 text-xs font-medium tracking-[0.2em] uppercase text-primary-dark bg-background/70 backdrop-blur px-3 py-1.5 rounded-full border border-primary/20"
           >
-            БҮТЭЭГДЭХҮҮН
+            <Sparkles className="w-3.5 h-3.5" />
+            {showNewOnly ? "Шинээр ирсэн" : "K-Beauty каталог"}
+          </motion.p>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.05 }}
+            className="font-serif-display text-4xl md:text-6xl lg:text-7xl font-light text-foreground mt-5 leading-[1.05] tracking-tight"
+          >
+            {showNewOnly ? (
+              <>
+                Шинэ <em className="italic text-primary">бүтээгдэхүүн</em>
+              </>
+            ) : (
+              <>
+                Арьсандаа <em className="italic text-primary">тохирохыг</em>
+                <br className="hidden sm:block" /> олоорой
+              </>
+            )}
           </motion.h1>
 
-          {/* Search bar */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
+          {/* Search */}
+          <motion.form
+            onSubmit={handleSearch}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.15 }}
-            className="flex gap-3 max-w-xl mx-auto"
+            className="mt-8 max-w-xl"
           >
-            <div className="flex-1 relative">
-              <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <div className="group flex items-center gap-2 p-1.5 pl-5 rounded-full bg-background/90 backdrop-blur border border-border shadow-[0_8px_30px_-12px_rgba(0,0,0,0.15)] focus-within:border-primary focus-within:shadow-[0_8px_30px_-8px_hsl(var(--primary)/0.35)] transition-all">
+              <Search className="w-5 h-5 text-muted-foreground shrink-0" />
               <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Хайх..."
-                className="w-full pl-13 pr-5 py-4 rounded-full bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary shadow-sm text-base"
-                style={{ paddingLeft: "3rem" }}
+                type="search"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder="Бүтээгдэхүүн, брэнд хайх..."
+                className="flex-1 min-w-0 bg-transparent py-2.5 text-base text-foreground placeholder:text-muted-foreground focus:outline-none [&::-webkit-search-cancel-button]:hidden"
               />
-            </div>
-            <button className="px-8 py-4 rounded-full bg-[hsl(70,90%,63%)] font-display text-sm uppercase tracking-wider text-foreground hover:brightness-95 transition-all shadow-md">
-              ХАЙХ
-            </button>
-          </motion.div>
-
-          {/* Filter pills */}
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="flex flex-wrap justify-center gap-3 mt-8"
-          >
-            {filterPills.map((pill) => (
+              {searchInput && (
+                <button
+                  type="button"
+                  aria-label="Цэвэрлэх"
+                  onClick={() => {
+                    setSearchInput("");
+                    updateParams({ q: null });
+                  }}
+                  className="p-1.5 rounded-full text-muted-foreground hover:bg-secondary"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
               <button
-                key={pill}
-                onClick={() => setActiveFilter(pill)}
-                className={`px-5 py-2.5 rounded-full text-sm font-semibold uppercase tracking-wide transition-all duration-200 ${
-                  activeFilter === pill
-                    ? "bg-foreground text-background shadow-md"
-                    : "bg-card text-foreground border border-border shadow-sm hover:shadow-md"
-                }`}
+                type="submit"
+                className="px-6 py-2.5 rounded-full bg-foreground text-background text-sm font-medium hover:bg-primary-dark transition-colors"
               >
-                {pill}
+                Хайх
               </button>
-            ))}
-          </motion.div>
+            </div>
+          </motion.form>
         </div>
       </section>
 
+      {/* Filter bar */}
+      <div className="relative z-10 bg-background/85 backdrop-blur-xl border-y border-border/60">
+        <div className="max-w-6xl mx-auto px-4 md:px-8 py-3 flex items-center gap-3">
+          <div className="flex-1 min-w-0 flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1 [scrollbar-width:none]">
+            <button
+              onClick={() => updateParams({ filter: showNewOnly ? null : "new" })}
+              className={`shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                showNewOnly
+                  ? "bg-primary text-primary-foreground shadow-md shadow-primary/30"
+                  : "bg-secondary text-foreground hover:bg-primary/10"
+              }`}
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              Шинэ
+            </button>
+            {filterPills.map((pill) => {
+              const active = activeFilter === pill;
+              return (
+                <button
+                  key={pill}
+                  onClick={() => updateParams({ cat: pill === ALL ? null : pill })}
+                  className={`relative shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                    active ? "text-background" : "text-foreground hover:bg-secondary"
+                  }`}
+                >
+                  {active && (
+                    <motion.span
+                      layoutId="shop-active-pill"
+                      className="absolute inset-0 rounded-full bg-foreground"
+                      transition={{ type: "spring", stiffness: 400, damping: 32 }}
+                    />
+                  )}
+                  <span className="relative">{pill === ALL ? "Бүгд" : pill}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <label className="shrink-0 relative flex items-center">
+            <SlidersHorizontal className="absolute left-3 w-4 h-4 text-muted-foreground pointer-events-none" />
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value as SortKey)}
+              aria-label="Эрэмбэлэх"
+              className="appearance-none pl-9 pr-4 py-2 rounded-full bg-secondary text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
+            >
+              {SORT_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+      </div>
+
       {/* Products Grid */}
-      <main className="px-4 pb-20">
+      <main className="px-4 md:px-8 pt-6 pb-24">
         <div className="max-w-6xl mx-auto">
-          <p className="text-muted-foreground mb-8 text-center">
-            {isLoading
-              ? "Ачааллаж байна..."
-              : `${filteredProducts.length} бүтээгдэхүүн`}
-          </p>
+          {/* Secondary filters: need · brand · price */}
+          <div className="flex flex-wrap gap-2 mb-6">
+            <FilterSelect
+              label="Хэрэгцээ"
+              value={activeTag}
+              options={tagOptions.map((t) => ({ value: t, label: t }))}
+              onChange={(v) => updateParams({ tag: v || null })}
+            />
+            <FilterSelect
+              label="Брэнд"
+              value={activeBrand}
+              options={brandOptions.map((b) => ({ value: b, label: b }))}
+              onChange={(v) => updateParams({ brand: v || null })}
+            />
+            <FilterSelect
+              label="Үнэ"
+              value={activePrice}
+              options={PRICE_RANGES.map(({ value, label }) => ({ value, label }))}
+              onChange={(v) => updateParams({ price: v || null })}
+            />
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-8">
+            <p className="text-sm text-muted-foreground">
+              {isLoading ? (
+                "Ачааллаж байна..."
+              ) : (
+                <>
+                  <span className="font-semibold text-foreground">{filteredProducts.length}</span>{" "}
+                  бүтээгдэхүүн
+                  {urlQuery && (
+                    <>
+                      {" "}· “<span className="text-foreground">{urlQuery}</span>”
+                    </>
+                  )}
+                </>
+              )}
+            </p>
+            {hasActiveFilters && (
+              <button
+                onClick={() => setSearchParams({}, { replace: true })}
+                className="text-sm text-primary-dark underline underline-offset-4 hover:text-foreground"
+              >
+                Шүүлтүүр цэвэрлэх
+              </button>
+            )}
+          </div>
 
           {isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="rounded-[32px] overflow-hidden bg-card">
-                  <Skeleton className="aspect-square w-full" />
-                  <div className="p-6 space-y-3">
-                    <Skeleton className="h-6 w-3/4" />
-                    <Skeleton className="h-5 w-1/2" />
-                    <Skeleton className="h-14 w-full rounded-full" />
-                  </div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-10 md:gap-x-6">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i}>
+                  <Skeleton className="aspect-[4/5] w-full rounded-3xl" />
+                  <Skeleton className="h-3 w-1/3 mt-4" />
+                  <Skeleton className="h-4 w-3/4 mt-2" />
+                  <Skeleton className="h-4 w-1/4 mt-3" />
                 </div>
               ))}
             </div>
           ) : error ? (
-            <div className="text-center py-16 text-muted-foreground">
-              Бүтээгдэхүүн ачааллахад алдаа гарлаа.
-            </div>
+            <EmptyState title="Бүтээгдэхүүн ачааллахад алдаа гарлаа." />
           ) : filteredProducts.length === 0 ? (
-            <div className="text-center py-16 text-muted-foreground">
-              Бүтээгдэхүүн олдсонгүй.
-            </div>
+            <EmptyState
+              title="Бүтээгдэхүүн олдсонгүй"
+              subtitle="Өөр түлхүүр үгээр хайх эсвэл шүүлтүүрээ цэвэрлээд үзээрэй."
+              onReset={() => setSearchParams({}, { replace: true })}
+            />
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredProducts.map((product, i) => (
-                <motion.div
-                  key={product.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: (i % 6) * 0.08 }}
-                  className="rounded-[32px] overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col"
-                >
-                  {/* Top half - white bg with image */}
-                  <div
-                    className="bg-card relative p-6 cursor-pointer"
-                    onClick={() => navigate(`/product/${product.id}`)}
-                  >
-                    <div className="absolute top-4 right-4 z-10">
-                      <WishlistButton productId={product.id} productName={product.name} />
-                    </div>
-
-                    {/* Tags */}
-                    {product.badges.length > 0 && (
-                      <div className="flex gap-2 mb-3">
-                        {product.badges.map((tag) => (
-                          <Badge
-                            key={tag}
-                            className="rounded-full text-[10px] font-bold uppercase tracking-wider px-3 py-1 bg-pastel-mint/60 text-foreground border-0"
-                          >
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
-
-                    <div className="aspect-square flex items-center justify-center">
-                      <img
-                        src={product.image}
-                        alt={product.name}
-                        className="w-full h-full object-cover rounded-2xl hover:scale-105 transition-transform duration-500"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Bottom half - pastel bg */}
-                  <div className="bg-pastel-lilac/30 p-6 flex flex-col flex-1">
-                    <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">
-                      {product.brand}
-                    </p>
-                    <h3
-                      className="font-bold text-lg text-foreground line-clamp-2 cursor-pointer hover:text-primary transition-colors"
-                      onClick={() => navigate(`/product/${product.id}`)}
-                    >
-                      {product.name}
-                    </h3>
-
-                    {/* Price & volume */}
-                    <div className="flex items-center justify-between mt-3 mb-4">
-                      <span className="text-xl font-bold text-foreground">
-                        {product.price}
-                      </span>
-                      <span className="text-sm text-muted-foreground font-medium">
-                        50ml
-                      </span>
-                    </div>
-
-                    {/* CTA */}
-                    <button
-                      onClick={() => {
-                        addItem({
-                          id: product.id,
-                          name: product.name,
-                          price: product.price,
-                          image: product.image,
-                        });
-                        toast({
-                          title: "Сагсанд нэмлээ!",
-                          description: product.name,
-                        });
-                      }}
-                      className={`w-full py-4 rounded-full font-display text-sm uppercase tracking-wider text-foreground ${btnColors[i % btnColors.length]} hover:brightness-95 transition-all shadow-sm hover:shadow-md mt-auto`}
-                    >
-                      САГСАНД НЭМЭХ +
-                    </button>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+            <motion.div layout className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-10 md:gap-x-6">
+              <AnimatePresence mode="popLayout">
+                {filteredProducts.map((product, i) => (
+                  <ShopCard
+                    key={product.id}
+                    product={product}
+                    index={i}
+                    onOpen={() => navigate(`/product/${product.id}`)}
+                    onAdd={() => handleAdd(product)}
+                  />
+                ))}
+              </AnimatePresence>
+            </motion.div>
           )}
         </div>
       </main>
@@ -276,5 +374,148 @@ const Shop = () => {
     </div>
   );
 };
+
+interface ShopCardProps {
+  product: Product;
+  index: number;
+  onOpen: () => void;
+  onAdd: () => void;
+}
+
+const ShopCard = ({ product, index, onOpen, onAdd }: ShopCardProps) => {
+  const soldOut = product.stockQuantity <= 0;
+  const badges = isRecent(product) ? ["Шинэ", ...product.badges] : product.badges;
+
+  return (
+    <motion.article
+      layout
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.96 }}
+      transition={{ duration: 0.35, delay: (index % 8) * 0.04 }}
+      className="group flex flex-col"
+    >
+      <div
+        className="relative aspect-[4/5] rounded-3xl overflow-hidden bg-secondary cursor-pointer"
+        onClick={onOpen}
+      >
+        <img
+          src={product.image}
+          alt={product.name}
+          loading="lazy"
+          className={`w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06] ${
+            soldOut ? "opacity-60 grayscale" : ""
+          }`}
+        />
+
+        {badges.length > 0 && (
+          <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
+            {badges.slice(0, 2).map((tag) => (
+              <span
+                key={tag}
+                className={`px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider backdrop-blur ${
+                  tag === "Шинэ" ? "bg-primary text-primary-foreground" : "bg-background/85 text-foreground"
+                }`}
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+
+        <div className="absolute top-3 right-3 z-10" onClick={(e) => e.stopPropagation()}>
+          <WishlistButton productId={product.id} productName={product.name} size="sm" />
+        </div>
+
+        {soldOut ? (
+          <div className="absolute inset-x-3 bottom-3 py-2.5 rounded-2xl bg-background/90 backdrop-blur text-center text-xs font-medium text-muted-foreground">
+            Дууссан
+          </div>
+        ) : (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onAdd();
+            }}
+            className="absolute inset-x-3 bottom-3 flex items-center justify-center gap-2 py-3 rounded-2xl bg-foreground/90 backdrop-blur text-background text-sm font-medium transition-all duration-300 md:translate-y-[calc(100%+12px)] md:opacity-0 md:group-hover:translate-y-0 md:group-hover:opacity-100 hover:bg-primary-dark active:scale-[0.98]"
+          >
+            <ShoppingBag className="w-4 h-4" />
+            Сагсанд нэмэх
+          </button>
+        )}
+      </div>
+
+      <div className="pt-4 px-1 cursor-pointer" onClick={onOpen}>
+        {product.brand && (
+          <p className="text-[11px] text-muted-foreground uppercase tracking-[0.15em]">
+            {product.brand}
+          </p>
+        )}
+        <h3 className="mt-1 text-sm md:text-[15px] font-medium text-foreground leading-snug line-clamp-2 group-hover:text-primary-dark transition-colors">
+          {product.name}
+        </h3>
+        <p className="mt-2 text-base font-semibold text-foreground">{product.price}</p>
+      </div>
+    </motion.article>
+  );
+};
+
+interface FilterSelectProps {
+  label: string;
+  value: string;
+  options: { value: string; label: string }[];
+  onChange: (value: string) => void;
+}
+
+const FilterSelect = ({ label, value, options, onChange }: FilterSelectProps) => {
+  if (options.length === 0) return null;
+  const active = !!value;
+  return (
+    <label className="relative inline-flex items-center">
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        aria-label={label}
+        className={`appearance-none h-9 pl-4 pr-9 rounded-full text-sm font-medium cursor-pointer border transition-colors focus:outline-none focus:ring-2 focus:ring-primary ${
+          active
+            ? "bg-primary/10 border-primary/40 text-primary-dark"
+            : "bg-background border-border text-foreground hover:border-foreground/30"
+        }`}
+      >
+        <option value="">{label}: Бүгд</option>
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>
+            {label}: {o.label}
+          </option>
+        ))}
+      </select>
+      <ChevronDown className="absolute right-3 w-4 h-4 text-muted-foreground pointer-events-none" />
+    </label>
+  );
+};
+
+interface EmptyStateProps {
+  title: string;
+  subtitle?: string;
+  onReset?: () => void;
+}
+
+const EmptyState = ({ title, subtitle, onReset }: EmptyStateProps) => (
+  <div className="flex flex-col items-center text-center py-20 px-6 rounded-3xl bg-secondary/60">
+    <div className="w-14 h-14 rounded-full bg-background flex items-center justify-center mb-5 shadow-sm">
+      <Search className="w-6 h-6 text-muted-foreground" />
+    </div>
+    <p className="text-lg font-medium text-foreground">{title}</p>
+    {subtitle && <p className="text-sm text-muted-foreground mt-2 max-w-sm">{subtitle}</p>}
+    {onReset && (
+      <button
+        onClick={onReset}
+        className="mt-6 px-6 py-2.5 rounded-full bg-foreground text-background text-sm font-medium hover:bg-primary-dark transition-colors"
+      >
+        Бүх бүтээгдэхүүн үзэх
+      </button>
+    )}
+  </div>
+);
 
 export default Shop;

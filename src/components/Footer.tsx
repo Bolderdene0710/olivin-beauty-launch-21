@@ -18,7 +18,7 @@ const Footer = () => {
               <img
                 src={logoSrc}
                 alt={storeName}
-                className="h-9 md:h-10 w-auto object-contain"
+                className="h-7 w-auto object-contain"
                 onError={(e) => {
                   (e.currentTarget as HTMLImageElement).src = olivinLogo;
                 }}
@@ -90,7 +90,7 @@ const Footer = () => {
       <div className="border-t border-border">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-4">
           <p className="text-xs text-muted-foreground text-center">
-            © 2025 OLIVIN. Бүх эрх хуулиар хамгаалагдсан.
+            © {new Date().getFullYear()} OLIVIN. Бүх эрх хуулиар хамгаалагдсан.
           </p>
         </div>
       </div>

@@ -1,89 +1,81 @@
 import { motion } from "framer-motion";
-import { Heart, Leaf, SprayCan, ShieldOff } from "lucide-react";
-import { PalmBranchLeft, LeafSprigRight } from "@/components/botanicals/BotanicalSVG";
+import { ShieldCheck, Truck, Wallet, RefreshCw } from "lucide-react";
+import { Link } from "react-router-dom";
+import heroImage from "@/assets/hero-skincare.jpg";
 
-const values = [
-  { icon: Heart, label: "Cruelty-Free", desc: "Амьтан дээр туршилт хийгээгүй" },
-  { icon: ShieldOff, label: "Sulfate Free", desc: "Сульфатгүй найрлага" },
-  { icon: Leaf, label: "Vegan", desc: "100% ургамлын гаралтай" },
-  { icon: SprayCan, label: "No Added Fragrance", desc: "Нэмэлт үнэргүй" },
+// Store-level promises (kept in sync with the ProductDetail trust strip).
+// Avoid per-product claims like "vegan" here — we sell many brands.
+const promises = [
+  { icon: ShieldCheck, label: "100% жинхэнэ", desc: "Солонгосын албан ёсны нийлүүлэгчээс шууд" },
+  { icon: Truck, label: "Хурдан хүргэлт", desc: "Улаанбаатар даяар 1–3 өдөрт" },
+  { icon: Wallet, label: "Хялбар төлбөр", desc: "Дансаар шилжүүлээд захиалгаа онлайн хянана" },
+  { icon: RefreshCw, label: "7 хоногт буцаалт", desc: "Худалдан авснаас хойш 7 хоногийн дотор" },
 ];
 
 const ValuesSection = () => {
   return (
-    <section className="py-20 md:py-32 px-4 relative overflow-hidden bg-background">
-      {/* Botanical decorations */}
-      <div className="absolute -left-6 -top-10 hidden md:block animate-sway-8 opacity-60">
-        <PalmBranchLeft />
-      </div>
-      <div className="absolute -right-4 bottom-0 hidden md:block animate-sway-13 opacity-60">
-        <LeafSprigRight />
-      </div>
-
-      <div className="max-w-5xl mx-auto relative z-10">
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+    <section className="py-20 md:py-28 px-4 bg-background">
+      <div className="max-w-6xl mx-auto grid lg:grid-cols-[1fr_1.1fr] gap-10 lg:gap-16 items-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.97 }}
+          whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center text-sm md:text-base font-medium tracking-[0.25em] uppercase text-foreground mb-16"
+          transition={{ duration: 0.7 }}
+          className="relative aspect-[4/5] max-h-[560px] w-full rounded-[2rem] overflow-hidden bg-secondary"
         >
-          ТАНЫ АРЬСАНД ЗӨВ ОРЦЫГ ЗӨВ ХЭМЖЭЭГЭЭР
-        </motion.h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
-          {/* Left values */}
-          <div className="flex flex-col gap-10">
-            {values.slice(0, 2).map((v, i) => (
-              <motion.div
-                key={v.label}
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="text-center md:text-right"
-              >
-                <v.icon className="w-8 h-8 stroke-[1.2] text-primary mx-auto md:ml-auto md:mr-0 mb-3" />
-                <h3 className="font-medium text-foreground tracking-wide text-sm uppercase">{v.label}</h3>
-                <p className="text-sm text-muted-foreground mt-1">{v.desc}</p>
-              </motion.div>
-            ))}
+          <img src={heroImage} alt="" loading="lazy" className="w-full h-full object-cover" />
+          <div className="absolute inset-x-4 bottom-4 rounded-2xl bg-background/85 backdrop-blur px-5 py-4">
+            <p className="font-serif-display text-xl text-foreground">
+              Сөүлээс <em className="italic text-primary">таны арьсанд</em>
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">K-Beauty-г Монголд итгэлтэйгээр</p>
           </div>
+        </motion.div>
 
-          {/* Center image */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
+        <div>
+          <motion.p
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-            className="flex justify-center"
+            className="text-xs font-medium tracking-[0.2em] uppercase text-primary-dark"
           >
-            <div className="w-56 h-72 md:w-64 md:h-96 bg-secondary rounded-[2rem] overflow-hidden">
-              <img
-                src="/placeholder.svg"
-                alt="Woman applying serum"
-                className="w-full h-full object-cover"
-              />
-            </div>
-          </motion.div>
+            Яагаад OLIVIN гэж?
+          </motion.p>
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="font-serif-display text-3xl md:text-5xl font-light tracking-tight leading-[1.1] text-foreground mt-3"
+          >
+            Итгэлтэй сонгож, <em className="italic text-primary">хялбар</em> захиал
+          </motion.h2>
 
-          {/* Right values */}
-          <div className="flex flex-col gap-10">
-            {values.slice(2, 4).map((v, i) => (
+          <div className="mt-10 grid sm:grid-cols-2 gap-4">
+            {promises.map((p, i) => (
               <motion.div
-                key={v.label}
-                initial={{ opacity: 0, x: 20 }}
-                whileInView={{ opacity: 1, x: 0 }}
+                key={p.label}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="text-center md:text-left"
+                transition={{ duration: 0.45, delay: i * 0.08 }}
+                className="rounded-3xl bg-secondary/60 p-5"
               >
-                <v.icon className="w-8 h-8 stroke-[1.2] text-primary mx-auto md:mr-auto md:ml-0 mb-3" />
-                <h3 className="font-medium text-foreground tracking-wide text-sm uppercase">{v.label}</h3>
-                <p className="text-sm text-muted-foreground mt-1">{v.desc}</p>
+                <span className="w-10 h-10 rounded-2xl bg-background flex items-center justify-center shadow-sm">
+                  <p.icon className="w-5 h-5 text-primary-dark" strokeWidth={1.6} />
+                </span>
+                <h3 className="mt-4 font-medium text-foreground">{p.label}</h3>
+                <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{p.desc}</p>
               </motion.div>
             ))}
           </div>
+
+          <Link
+            to="/faq"
+            className="mt-8 inline-flex text-sm font-medium text-primary-dark underline underline-offset-4 hover:text-foreground"
+          >
+            Хүргэлт, төлбөр, буцаалтын нөхцөл →
+          </Link>
         </div>
       </div>
     </section>
