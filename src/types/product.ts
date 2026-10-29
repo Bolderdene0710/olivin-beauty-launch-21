@@ -30,8 +30,13 @@ export interface Product {
   id: string;
   name: string;
   brand: string;
+  // price/priceNumber are what the customer pays (sale price when on sale)
   price: string;
   priceNumber: number;
+  // Original price, set only while the product is on sale
+  compareAtPrice: string | null;
+  compareAtPriceNumber: number | null;
+  discountPercent: number | null;
   image: string;
   images: string[];
   category: string;
@@ -78,13 +83,29 @@ export interface BannerRow {
 
 const PLACEHOLDER_IMAGE = "/placeholder.svg";
 
+export const formatPrice = (n: number) => `${n.toLocaleString()}₮`;
+
+// A sale only counts when sale_price is set and actually below price
+export function getSalePricing(price: number, salePrice: number | null | undefined) {
+  const onSale = salePrice != null && salePrice >= 0 && salePrice < price;
+  return {
+    effective: onSale ? Number(salePrice) : price,
+    compareAt: onSale ? price : null,
+    discountPercent: onSale ? Math.round(((price - Number(salePrice)) / price) * 100) : null,
+  };
+}
+
 export function mapProductRowToProduct(row: ProductRow): Product {
+  const pricing = getSalePricing(row.price, row.sale_price);
   return {
     id: row.id,
     name: row.title,
     brand: row.brand ?? "",
-    price: `${row.price.toLocaleString()}₮`,
-    priceNumber: row.price,
+    price: formatPrice(pricing.effective),
+    priceNumber: pricing.effective,
+    compareAtPrice: pricing.compareAt != null ? formatPrice(pricing.compareAt) : null,
+    compareAtPriceNumber: pricing.compareAt,
+    discountPercent: pricing.discountPercent,
     image: row.image_url || PLACEHOLDER_IMAGE,
     images: row.image_urls || [],
     category: row.categories?.name ?? "",

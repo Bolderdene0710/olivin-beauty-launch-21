@@ -13,6 +13,7 @@ import {
   type CarouselApi,
 } from "@/components/ui/carousel";
 import type { Product } from "@/types/product";
+import PriceTag from "@/components/PriceTag";
 import { WishlistButton } from "@/components/WishlistButton";
 
 const AUTOPLAY_MS = 4500;
@@ -232,7 +233,13 @@ const ProductCard = ({ product, onAdd, onOpen }: ProductCardProps) => (
         {product.brand}
       </p>
     )}
-    <p className="text-sm text-foreground mt-2">{product.price}</p>
+    <PriceTag
+      className="mt-2 text-sm"
+      priceClassName="font-normal"
+      price={product.price}
+      compareAtPrice={product.compareAtPrice}
+      discountPercent={product.discountPercent}
+    />
 
     <button
       onClick={onAdd}

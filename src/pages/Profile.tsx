@@ -26,6 +26,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { WishlistButton } from "@/components/WishlistButton";
 import { useWishlist } from "@/hooks/useWishlist";
+import PriceTag from "@/components/PriceTag";
 import { useProducts } from "@/hooks/useProducts";
 import { useCart } from "@/contexts/CartContext";
 
@@ -570,7 +571,12 @@ const Profile = () => {
                             )}
                             <p className="mt-0.5 text-sm font-medium text-foreground line-clamp-1">{p.name}</p>
                             <div className="mt-2 flex items-center justify-between gap-2">
-                              <span className="text-sm font-semibold">{p.price}</span>
+                              <PriceTag
+                                className="text-sm"
+                                price={p.price}
+                                compareAtPrice={p.compareAtPrice}
+                                discountPercent={p.discountPercent}
+                              />
                               <button
                                 onClick={() => handleAddToCart(p)}
                                 aria-label="Сагсанд нэмэх"

@@ -8,6 +8,7 @@ import Footer from "@/components/Footer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useProducts } from "@/hooks/useProducts";
+import PriceTag from "@/components/PriceTag";
 import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/hooks/use-toast";
 import { WishlistButton } from "@/components/WishlistButton";
@@ -126,9 +127,12 @@ const Wishlist = () => {
                     {product.name}
                   </h3>
                   <div className="flex items-center justify-between mt-3 mb-4">
-                    <span className="text-xl font-bold text-foreground">
-                      {product.price}
-                    </span>
+                    <PriceTag
+                      priceClassName="text-xl font-bold"
+                      price={product.price}
+                      compareAtPrice={product.compareAtPrice}
+                      discountPercent={product.discountPercent}
+                    />
                   </div>
                   <button
                     onClick={() => {

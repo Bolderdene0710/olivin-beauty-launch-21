@@ -12,6 +12,7 @@ import Footer from "@/components/Footer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { WishlistButton } from "@/components/WishlistButton";
 import type { Product } from "@/types/product";
+import PriceTag from "@/components/PriceTag";
 
 const ALL = "All";
 const NEW_ARRIVALS_LIMIT = 12;
@@ -51,6 +52,7 @@ const Shop = () => {
   const urlQuery = searchParams.get("q") ?? "";
   const activeFilter = searchParams.get("cat") || searchParams.get("category") || ALL;
   const showNewOnly = searchParams.get("filter") === "new";
+  const showSaleOnly = searchParams.get("filter") === "sale";
   const activeBrand = searchParams.get("brand") ?? "";
   const activeTag = searchParams.get("tag") ?? "";
   const activePrice = searchParams.get("price") ?? "";
@@ -93,6 +95,7 @@ const Shop = () => {
   const filteredProducts = useMemo(() => {
     let filtered = products;
 
+    if (showSaleOnly) filtered = filtered.filter((p) => p.compareAtPrice != null);
     if (activeBrand) filtered = filtered.filter((p) => p.brand === activeBrand);
     if (activeTag) filtered = filtered.filter((p) => p.badges.includes(activeTag));
 
@@ -127,10 +130,10 @@ const Shop = () => {
     else if (sort === "price-desc") sorted.sort((a, b) => b.priceNumber - a.priceNumber);
 
     return showNewOnly ? sorted.slice(0, NEW_ARRIVALS_LIMIT) : sorted;
-  }, [products, activeFilter, urlQuery, sort, showNewOnly, activeBrand, activeTag, activePrice]);
+  }, [products, activeFilter, urlQuery, sort, showNewOnly, showSaleOnly, activeBrand, activeTag, activePrice]);
 
   const hasActiveFilters =
-    activeFilter !== ALL || !!urlQuery || showNewOnly || !!activeBrand || !!activeTag || !!activePrice;
+    activeFilter !== ALL || !!urlQuery || showNewOnly || showSaleOnly || !!activeBrand || !!activeTag || !!activePrice;
 
   const handleAdd = (product: Product) => {
     addItem({
@@ -241,6 +244,18 @@ const Shop = () => {
               <Sparkles className="w-3.5 h-3.5" />
               Шинэ
             </button>
+            {products.some((p) => p.compareAtPrice != null) && (
+              <button
+                onClick={() => updateParams({ filter: showSaleOnly ? null : "sale" })}
+                className={`shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                  showSaleOnly
+                    ? "bg-red-600 text-white shadow-md shadow-red-600/30"
+                    : "bg-red-50 text-red-700 hover:bg-red-100"
+                }`}
+              >
+                Хямдрал
+              </button>
+            )}
             {filterPills.map((pill) => {
               const active = activeFilter === pill;
               return (
@@ -454,7 +469,13 @@ const ShopCard = ({ product, index, onOpen, onAdd }: ShopCardProps) => {
         <h3 className="mt-1 text-sm md:text-[15px] font-medium text-foreground leading-snug line-clamp-2 group-hover:text-primary-dark transition-colors">
           {product.name}
         </h3>
-        <p className="mt-2 text-base font-semibold text-foreground">{product.price}</p>
+        <PriceTag
+          className="mt-2"
+          priceClassName="text-base"
+          price={product.price}
+          compareAtPrice={product.compareAtPrice}
+          discountPercent={product.discountPercent}
+        />
       </div>
     </motion.article>
   );

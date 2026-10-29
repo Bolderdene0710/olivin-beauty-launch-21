@@ -20,6 +20,8 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useProducts } from "@/hooks/useProducts";
+import PriceTag from "@/components/PriceTag";
+import { formatPrice, getSalePricing } from "@/types/product";
 import { useCart } from "@/contexts/CartContext";
 import { fetchProductWithVariants, type ProductVariant } from "@/lib/supabase";
 import Footer from "@/components/Footer";
@@ -72,10 +74,12 @@ const ProductDetail = () => {
     return groups;
   }, [rawProduct]);
 
-  const basePrice = rawProduct?.price ?? 0;
+  // Variant adjustments apply on top of both the sale and the original price
+  const pricing = getSalePricing(rawProduct?.price ?? 0, rawProduct?.sale_price);
   const adjustment = selectedVariant?.price_adjustment ?? 0;
-  const displayPrice = basePrice + adjustment;
-  const formattedPrice = `${displayPrice.toLocaleString()}₮`;
+  const displayPrice = pricing.effective + adjustment;
+  const formattedPrice = formatPrice(displayPrice);
+  const compareAtPrice = pricing.compareAt != null ? formatPrice(pricing.compareAt + adjustment) : null;
 
   const product = useMemo(() => {
     if (!rawProduct) return null;
@@ -385,11 +389,19 @@ const ProductDetail = () => {
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -8 }}
-                    className="text-3xl font-semibold tabular-nums text-foreground"
+                    className={`text-3xl font-semibold tabular-nums ${compareAtPrice ? "text-red-600" : "text-foreground"}`}
                   >
                     {formattedPrice}
                   </motion.span>
                 </AnimatePresence>
+                {compareAtPrice && (
+                  <>
+                    <span className="text-base text-muted-foreground line-through tabular-nums">{compareAtPrice}</span>
+                    <span className="rounded-full bg-red-50 px-2 py-0.5 text-xs font-semibold text-red-600">
+                      -{pricing.discountPercent}%
+                    </span>
+                  </>
+                )}
               </div>
               <span className={`inline-flex items-center gap-1.5 text-xs font-medium ${stockLabel.className}`}>
                 <span className={`h-2 w-2 rounded-full ${stockLabel.dot}`} />
@@ -605,7 +617,12 @@ const ProductDetail = () => {
                   <p className="mt-1 text-sm font-medium text-foreground line-clamp-2 group-hover:text-primary-dark transition-colors">
                     {p.name}
                   </p>
-                  <p className="mt-1.5 text-sm font-semibold">{p.price}</p>
+                  <PriceTag
+                    className="mt-1.5 text-sm"
+                    price={p.price}
+                    compareAtPrice={p.compareAtPrice}
+                    discountPercent={p.discountPercent}
+                  />
                 </Link>
               ))}
             </div>
