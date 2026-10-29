@@ -38,6 +38,7 @@ const HeroSection = () => {
     : DEFAULT_TITLE_LINES;
   const subtitle = banner?.subtitle || DEFAULT_SUBTITLE;
   const ctaLink = banner?.button_link || DEFAULT_LINK;
+  const ctaText = banner?.button_text?.trim() || "Дэлгүүр үзэх";
   const portraitImage = banner?.image_url || heroImage;
   const isExternal = /^https?:\/\//i.test(ctaLink);
 
@@ -128,7 +129,7 @@ const HeroSection = () => {
                   className="group inline-flex items-center gap-2 h-12 px-7 rounded-full text-sm font-medium text-white shadow-[0_8px_24px_-8px_rgba(125,155,110,0.6)] hover:opacity-95 transition-opacity"
                   style={{ background: SAGE }}
                 >
-                  Дэлгүүр үзэх
+                  {ctaText}
                   <ArrowUpRight
                     className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
                     strokeWidth={2}
@@ -140,7 +141,7 @@ const HeroSection = () => {
                   className="group inline-flex items-center gap-2 h-12 px-7 rounded-full text-sm font-medium text-white shadow-[0_8px_24px_-8px_rgba(125,155,110,0.6)] hover:opacity-95 transition-opacity"
                   style={{ background: SAGE }}
                 >
-                  Дэлгүүр үзэх
+                  {ctaText}
                   <ArrowUpRight
                     className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
                     strokeWidth={2}

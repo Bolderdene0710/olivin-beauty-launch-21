@@ -76,6 +76,9 @@ export interface BannerRow {
   subtitle: string | null;
   image_url: string;
   button_link: string | null;
+  button_text?: string | null;
+  starts_at?: string | null;
+  ends_at?: string | null;
   is_active: boolean;
   display_order: number;
   created_at: string;

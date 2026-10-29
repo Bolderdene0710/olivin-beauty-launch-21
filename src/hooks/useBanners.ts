@@ -31,7 +31,13 @@ export function useBanners() {
         .order("display_order", { ascending: true });
 
       if (error) throw error;
-      return (data as BannerRow[]) || [];
+      // Respect the optional schedule set in the admin panel
+      const now = Date.now();
+      return ((data as BannerRow[]) || []).filter(
+        (b) =>
+          (!b.starts_at || new Date(b.starts_at).getTime() <= now) &&
+          (!b.ends_at || new Date(b.ends_at).getTime() > now)
+      );
     },
   });
 }
