@@ -41,6 +41,8 @@ interface Order {
   khoroo: string | number;
   detailed_address?: string | null;
   total_amount: number;
+  promo_code?: string | null;
+  discount_amount?: number | null;
   items: Array<{ name: string; quantity: number; price: number }>;
   created_at: string;
 }
@@ -472,6 +474,17 @@ const OrderTracking = () => {
                     </div>
                   ))}
                 </div>
+
+                {Number(order.discount_amount) > 0 && (
+                  <div className="mt-4 flex justify-between text-sm">
+                    <span className="text-muted-foreground">
+                      Хөнгөлөлт{order.promo_code ? ` (${order.promo_code})` : ""}
+                    </span>
+                    <span style={{ color: SAGE_DARK }}>
+                      −{Number(order.discount_amount).toLocaleString()}₮
+                    </span>
+                  </div>
+                )}
 
                 <div
                   className="mt-5 pt-5 border-t-2 flex justify-between items-baseline"

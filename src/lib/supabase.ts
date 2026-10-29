@@ -76,6 +76,8 @@ export interface OrderLookup {
   phone_number: string;
   customer_email?: string | null;
   detailed_address?: string | null;
+  promo_code?: string | null;
+  discount_amount?: number | null;
 }
 
 export const fetchOrderByNumber = async (orderNumber: string): Promise<OrderLookup | null> => {

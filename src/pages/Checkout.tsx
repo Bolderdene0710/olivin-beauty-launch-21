@@ -16,7 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { createManualOrder, fetchOrderByNumber, supabase } from "@/lib/supabase";
-import { Mail, Phone, MapPin, User, ShoppingBag, ChevronLeft, Shield, CheckCircle2 } from "lucide-react";
+import { Mail, Phone, MapPin, User, ShoppingBag, ChevronLeft, Shield, CheckCircle2, Tag, X, Loader2 } from "lucide-react";
 import PaymentModal from "@/components/PaymentModal";
 
 const Checkout = () => {
@@ -28,6 +28,63 @@ const Checkout = () => {
   const [orderNumber, setOrderNumber] = useState("");
   const [paidAmount, setPaidAmount] = useState(0);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [promoInput, setPromoInput] = useState("");
+  const [appliedPromo, setAppliedPromo] = useState<{ code: string; discount: number } | null>(null);
+  const [promoError, setPromoError] = useState("");
+  const [checkingPromo, setCheckingPromo] = useState(false);
+
+  const discount = appliedPromo?.discount ?? 0;
+  const payableTotal = Math.max(cartTotal - discount, 0);
+
+  // The database decides validity and the amount; this is only a preview.
+  // The order trigger recomputes the same discount when the order is placed.
+  const checkPromo = async (code: string, subtotal: number) => {
+    const { data, error } = await supabase.rpc("check_promo_code", { p_code: code, p_subtotal: subtotal });
+    if (error) throw error;
+    return data as { valid: boolean; code?: string; discount?: number; message?: string };
+  };
+
+  const handleApplyPromo = async () => {
+    const code = promoInput.trim();
+    if (!code) return;
+    setCheckingPromo(true);
+    setPromoError("");
+    try {
+      const result = await checkPromo(code, cartTotal);
+      if (result.valid && result.code) {
+        setAppliedPromo({ code: result.code, discount: Number(result.discount) || 0 });
+        setPromoInput("");
+      } else {
+        setAppliedPromo(null);
+        setPromoError(result.message || "Промо код хүчингүй");
+      }
+    } catch {
+      setPromoError("Шалгахад алдаа гарлаа. Дахин оролдоно уу.");
+    } finally {
+      setCheckingPromo(false);
+    }
+  };
+
+  // Percentage codes depend on the cart total, so refresh the preview when it changes
+  useEffect(() => {
+    if (!appliedPromo || cartTotal <= 0) return;
+    let active = true;
+    checkPromo(appliedPromo.code, cartTotal)
+      .then((result) => {
+        if (!active) return;
+        if (result.valid && result.code) {
+          setAppliedPromo({ code: result.code, discount: Number(result.discount) || 0 });
+        } else {
+          setAppliedPromo(null);
+          setPromoError(result.message || "Промо код хүчингүй болсон");
+        }
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cartTotal]);
 
   const [formData, setFormData] = useState({
     email: "",
@@ -123,7 +180,7 @@ const Checkout = () => {
         .join("")
         .toUpperCase();
       const newOrderNumber = `ORD${Date.now().toString(36).toUpperCase()}${randomPart}`;
-      const snapshotTotal = cartTotal;
+      const snapshotTotal = payableTotal;
 
       await createManualOrder({
         order_number: newOrderNumber,
@@ -134,6 +191,7 @@ const Checkout = () => {
         khoroo: formData.khoroo,
         detailed_address: formData.detailedAddress,
         total_amount: snapshotTotal,
+        promo_code: appliedPromo?.code ?? null,
         status: "pending",
         items: items.map(item => ({
           id: item.id,
@@ -419,11 +477,67 @@ const Checkout = () => {
 
               <Separator className="my-4 bg-border/40" />
 
+              <div className="mb-5 font-[Roboto]">
+                {appliedPromo ? (
+                  <div className="flex items-center justify-between rounded-xl border border-primary/30 bg-primary/5 px-3 py-2.5 text-sm">
+                    <span className="flex items-center gap-2 font-medium">
+                      <Tag className="h-4 w-4 text-primary" />
+                      {appliedPromo.code}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setAppliedPromo(null)}
+                      className="text-muted-foreground hover:text-foreground"
+                      aria-label="Промо код хасах"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <form
+                    className="flex gap-2"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      handleApplyPromo();
+                    }}
+                  >
+                    <div className="relative flex-1">
+                      <Tag className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        value={promoInput}
+                        onChange={(e) => {
+                          setPromoInput(e.target.value.toUpperCase());
+                          setPromoError("");
+                        }}
+                        placeholder="Промо код"
+                        className="h-11 rounded-xl pl-9 uppercase"
+                        aria-label="Промо код"
+                      />
+                    </div>
+                    <Button
+                      type="submit"
+                      variant="outline"
+                      className="h-11 rounded-xl px-5"
+                      disabled={!promoInput.trim() || checkingPromo}
+                    >
+                      {checkingPromo ? <Loader2 className="h-4 w-4 animate-spin" /> : "Ашиглах"}
+                    </Button>
+                  </form>
+                )}
+                {promoError && <p className="mt-2 text-xs text-destructive">{promoError}</p>}
+              </div>
+
               <div className="space-y-2.5 mb-6 font-[Roboto]">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Дүн</span>
                   <span>{cartTotal.toLocaleString()}₮</span>
                 </div>
+                {appliedPromo && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Хөнгөлөлт ({appliedPromo.code})</span>
+                    <span className="font-medium text-primary">−{discount.toLocaleString()}₮</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Хүргэлт</span>
                   <span className="text-primary font-medium">Үнэгүй</span>
@@ -431,7 +545,7 @@ const Checkout = () => {
                 <Separator className="bg-border/40" />
                 <div className="flex justify-between text-xl font-semibold pt-1">
                   <span>Нийт</span>
-                  <span className="text-primary">{cartTotal.toLocaleString()}₮</span>
+                  <span className="text-primary">{payableTotal.toLocaleString()}₮</span>
                 </div>
               </div>
 

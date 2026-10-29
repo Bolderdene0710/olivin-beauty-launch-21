@@ -195,6 +195,14 @@ const Invoice = () => {
             {/* Total */}
             <div className="flex justify-end mb-8">
               <div className="w-full md:w-1/2">
+                {Number(order.discount_amount) > 0 && (
+                  <div className="flex justify-between py-2 text-sm">
+                    <span className="text-muted-foreground">
+                      Discount{order.promo_code ? ` (${order.promo_code})` : ""}:
+                    </span>
+                    <span>−₮{Number(order.discount_amount).toLocaleString()}</span>
+                  </div>
+                )}
                 <div className="flex justify-between py-2 border-t">
                   <span className="font-semibold text-xl">Total Amount:</span>
                   <span className="font-bold text-2xl">
