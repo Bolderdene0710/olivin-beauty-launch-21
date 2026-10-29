@@ -25,7 +25,7 @@ import { useStoreSettings } from "@/hooks/useStoreSettings";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useCart } from "@/contexts/CartContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { User as SupabaseUser } from "@supabase/supabase-js";
 import { AnimatePresence, motion } from "framer-motion";
@@ -77,6 +77,10 @@ const Header = () => {
   const [searchValue, setSearchValue] = useState("");
   const { cartCount } = useCart();
   const navigate = useNavigate();
+  const location = useLocation();
+  const megaTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const mobileRef = useRef<HTMLDivElement | null>(null);
+  const mobileTriggerRef = useRef<HTMLButtonElement | null>(null);
   const megaRef = useRef<HTMLDivElement | null>(null);
   const { data: dbCategories = [] } = useCategories();
   const { data: storeSettings } = useStoreSettings();
@@ -113,27 +117,41 @@ const Header = () => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Close mega menu on outside click + ESC
+  // Close menus whenever the route (or query) changes
   useEffect(() => {
-    if (!megaOpen) return;
+    setMegaOpen(false);
+    setMobileOpen(false);
+  }, [location.pathname, location.search]);
+
+  // Close open menus on outside click + ESC. Clicks on a menu's own trigger
+  // are ignored here so the trigger's toggle can close it (otherwise mousedown
+  // closes it and the click immediately reopens it).
+  useEffect(() => {
+    if (!megaOpen && !mobileOpen) return;
+    const isInside = (target: Node, ...refs: React.RefObject<HTMLElement>[]) =>
+      refs.some((r) => r.current?.contains(target));
+
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setMegaOpen(false);
+      if (e.key !== "Escape") return;
+      setMegaOpen(false);
+      setMobileOpen(false);
     };
-    const onClick = (e: MouseEvent) => {
-      if (megaRef.current && !megaRef.current.contains(e.target as Node)) {
-        setMegaOpen(false);
-      }
+    const onPointerDown = (e: PointerEvent) => {
+      const target = e.target as Node;
+      if (megaOpen && !isInside(target, megaRef, megaTriggerRef)) setMegaOpen(false);
+      if (mobileOpen && !isInside(target, mobileRef, mobileTriggerRef)) setMobileOpen(false);
     };
     window.addEventListener("keydown", onKey);
-    window.addEventListener("mousedown", onClick);
+    window.addEventListener("pointerdown", onPointerDown);
     return () => {
       window.removeEventListener("keydown", onKey);
-      window.removeEventListener("mousedown", onClick);
+      window.removeEventListener("pointerdown", onPointerDown);
     };
-  }, [megaOpen]);
+  }, [megaOpen, mobileOpen]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    setMobileOpen(false);
     if (searchValue.trim()) {
       navigate(`/shop?q=${encodeURIComponent(searchValue.trim())}`);
       setSearchValue("");
@@ -262,8 +280,11 @@ const Header = () => {
 
             {/* Mobile hamburger */}
             <button
+              ref={mobileTriggerRef}
               className="lg:hidden h-10 w-10 flex items-center justify-center rounded-full hover:bg-[#fafaf9] text-foreground/80"
               onClick={() => setMobileOpen((v) => !v)}
+              aria-label={mobileOpen ? "Цэс хаах" : "Цэс нээх"}
+              aria-expanded={mobileOpen}
             >
               {mobileOpen ? (
                 <X className="w-5 h-5" strokeWidth={1.6} />
@@ -278,7 +299,9 @@ const Header = () => {
         <div className="hidden lg:flex items-center gap-2 h-12 -mt-1 pb-2 relative">
           {/* Mega menu trigger */}
           <button
+            ref={megaTriggerRef}
             onClick={() => setMegaOpen((v) => !v)}
+            aria-expanded={megaOpen}
             className="relative inline-flex items-center gap-2 h-10 px-5 rounded-full text-sm font-bold uppercase tracking-wide text-white transition-all"
             style={{
               background: megaOpen ? SAGE_DARK : SAGE,
@@ -463,6 +486,7 @@ const Header = () => {
       <AnimatePresence>
         {mobileOpen && (
           <motion.nav
+            ref={mobileRef}
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}

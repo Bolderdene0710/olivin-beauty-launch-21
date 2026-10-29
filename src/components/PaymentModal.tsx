@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/compone
 import { Copy, QrCode, Building2, AlertTriangle, Check, Loader2, Clock, PackageCheck, XCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
+import { STORE_BANK } from "@/lib/storeInfo";
 
 interface PaymentModalProps {
   open: boolean;
@@ -96,9 +97,9 @@ const PaymentModal = ({ open, onOpenChange, orderNumber, totalAmount }: PaymentM
   };
 
   const bankDetails = [
-    { label: "Банк", value: "Хаан Банк", key: "bank" },
-    { label: "Дансны нэр", value: "OLIVIN LLC", key: "name" },
-    { label: "Дансны дугаар", value: "5037716403", key: "account", mono: true },
+    { label: "Банк", value: STORE_BANK.bank, key: "bank" },
+    { label: "Дансны нэр", value: STORE_BANK.accountName, key: "name" },
+    { label: "Дансны дугаар", value: STORE_BANK.accountNumber, key: "account", mono: true },
     { label: "Гүйлгээний утга", value: orderNumber, key: "desc", mono: true, highlight: true },
   ];
 

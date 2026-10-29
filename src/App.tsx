@@ -17,6 +17,11 @@ const Wishlist = lazy(() => import("./pages/Wishlist"));
 const Invoice = lazy(() => import("./pages/Invoice"));
 const About = lazy(() => import("./pages/About"));
 const FAQ = lazy(() => import("./pages/FAQ"));
+const Payment = lazy(() => import("./pages/Payment"));
+const Promotions = lazy(() => import("./pages/Promotions"));
+const Returns = lazy(() => import("./pages/Returns"));
+const Privacy = lazy(() => import("./pages/Privacy"));
+const Contact = lazy(() => import("./pages/Contact"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Home stays in the main bundle; other pages load on demand.
@@ -49,6 +54,11 @@ const App = () => (
             <Route path="/invoice" element={<Invoice />} />
             <Route path="/about" element={<About />} />
             <Route path="/faq" element={<FAQ />} />
+            <Route path="/payment" element={<Payment />} />
+            <Route path="/promotions" element={<Promotions />} />
+            <Route path="/returns" element={<Returns />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/contact" element={<Contact />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

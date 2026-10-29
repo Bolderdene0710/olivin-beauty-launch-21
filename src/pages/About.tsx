@@ -1,98 +1,44 @@
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import { ShieldCheck, Truck, Wallet, Heart } from "lucide-react";
+import InfoLayout, { InfoSection, FeatureGrid, InfoLink } from "@/components/InfoLayout";
+import { STORE_POLICY } from "@/lib/storeInfo";
 
-const About = () => {
-  return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
-      
-      <main className="flex-1">
-        {/* Hero Section */}
-        <section className="bg-primary/20 py-16 md:py-24">
-          <div className="container mx-auto px-4 text-center">
-            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-              Olivin Beauty
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Монголд K-Beauty бүтээгдэхүүн худалдаалагч
-            </p>
-          </div>
-        </section>
+const About = () => (
+  <InfoLayout
+    kicker="Бидний тухай"
+    title={
+      <>
+        Сөүлээс <em className="italic text-primary">таны арьсанд</em>
+      </>
+    }
+    intro="OLIVIN нь Солонгосын жинхэнэ арьс арчилгааны бүтээгдэхүүнийг Монголын хэрэглэгчдэд итгэлтэй, хялбараар хүргэх онлайн дэлгүүр юм."
+  >
+    <InfoSection title="Бидний зорилго">
+      <p>
+        Бид Солонгосын шилдэг арьс арчилгааны бүтээгдэхүүнийг Монголд хүргэж, хэрэглэгч бүр өөрийн арьсанд
+        тохирохыг итгэлтэй сонгох боломжийг бүрдүүлэхийг зорьдог. Зөвхөн 100% жинхэнэ, чанартай бүтээгдэхүүн
+        санал болгоно.
+      </p>
+    </InfoSection>
 
-        {/* About Content */}
-        <section className="py-16 md:py-20">
-          <div className="container mx-auto px-4 max-w-4xl">
-            <div className="space-y-12">
-              {/* Mission */}
-              <div className="text-center">
-                <h2 className="text-2xl md:text-3xl font-semibold text-foreground mb-4">
-                  Бидний зорилго
-                </h2>
-                <p className="text-muted-foreground leading-relaxed">
-                  Olivin Beauty нь Солонгосын шилдэг арьс арчилгааны бүтээгдэхүүнүүдийг 
-                  Монголын хэрэглэгчдэд хүргэх зорилготой. Бид зөвхөн 100% жинхэнэ, 
-                  чанартай бүтээгдэхүүнүүдийг санал болгодог.
-                </p>
-              </div>
+    <InfoSection title="Бид юугаараа ялгардаг вэ?">
+      <FeatureGrid
+        items={[
+          { icon: ShieldCheck, title: "100% жинхэнэ", text: "Солонгосын албан ёсны борлуулагчдаас шууд авч ирдэг." },
+          { icon: Truck, title: "Хурдан хүргэлт", text: `Улаанбаатарт ${STORE_POLICY.deliveryCity}, орон нутагт ${STORE_POLICY.deliveryCountryside}.` },
+          { icon: Wallet, title: "Хялбар төлбөр", text: "Дансаар шилжүүлээд захиалгаа онлайнаар хянана." },
+          { icon: Heart, title: "Найдвартай үйлчилгээ", text: "Хэрэглэгчийн сэтгэл ханамж бидний тэргүүлэх зорилт." },
+        ]}
+      />
+    </InfoSection>
 
-              {/* Values */}
-              <div className="grid md:grid-cols-3 gap-8">
-                <div className="text-center p-6 rounded-2xl bg-accent/30">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/20 flex items-center justify-center">
-                    <span className="text-2xl">✨</span>
-                  </div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">
-                    Жинхэнэ бүтээгдэхүүн
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Бүх бүтээгдэхүүн шууд Солонгосоос ирдэг
-                  </p>
-                </div>
-
-                <div className="text-center p-6 rounded-2xl bg-accent/30">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/20 flex items-center justify-center">
-                    <span className="text-2xl">🚚</span>
-                  </div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">
-                    Хурдан хүргэлт
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Улаанбаатар хотод түргэн шуурхай хүргэлт
-                  </p>
-                </div>
-
-                <div className="text-center p-6 rounded-2xl bg-accent/30">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/20 flex items-center justify-center">
-                    <span className="text-2xl">💚</span>
-                  </div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">
-                    Найдвартай үйлчилгээ
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Хэрэглэгчийн сэтгэл ханамж бидний тэргүүлэх зорилт
-                  </p>
-                </div>
-              </div>
-
-              {/* Story */}
-              <div className="text-center">
-                <h2 className="text-2xl md:text-3xl font-semibold text-foreground mb-4">
-                  Бидний түүх
-                </h2>
-                <p className="text-muted-foreground leading-relaxed">
-                  Olivin Beauty нь K-Beauty-д дурлагсад хамтдаа үүсгэн байгуулсан. 
-                  Бид Солонгосын арьс арчилгааны соёлыг Монголд түгээж, хүн бүрт 
-                  гоо сайхны шилдэг бүтээгдэхүүнийг хүргэхийг зорьдог.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-      </main>
-
-      <Footer />
-    </div>
-  );
-};
+    <InfoSection title="Бидний түүх">
+      <p>
+        OLIVIN-ийг K-Beauty-д дурлагсад хамтдаа үүсгэн байгуулсан. Бид Солонгосын арьс арчилгааны соёлыг Монголд
+        түгээж, хүн бүрт гоо сайхны шилдэг бүтээгдэхүүнийг хүргэхийг зорьдог.
+      </p>
+      <InfoLink to="/shop">Бүтээгдэхүүн үзэх</InfoLink>
+    </InfoSection>
+  </InfoLayout>
+);
 
 export default About;

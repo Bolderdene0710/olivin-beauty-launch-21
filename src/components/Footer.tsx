@@ -37,7 +37,7 @@ const Footer = () => {
             <div className="flex flex-col gap-2">
               <Link to="/shop?filter=new" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Шинэ</Link>
               <Link to="/shop" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Каталог</Link>
-              <Link to="/track-order" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Хүргэлт</Link>
+              <Link to="/track-order" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Захиалга хянах</Link>
             </div>
           </div>
 
@@ -48,8 +48,8 @@ const Footer = () => {
             </h4>
             <div className="flex flex-col gap-2">
               <Link to="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Бидний тухай</Link>
-              <Link to="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Төлбөр</Link>
-              <Link to="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Урамшуулал</Link>
+              <Link to="/payment" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Төлбөр ба хүргэлт</Link>
+              <Link to="/promotions" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Урамшуулал</Link>
             </div>
           </div>
 
@@ -59,10 +59,10 @@ const Footer = () => {
               Тусламж
             </h4>
             <div className="flex flex-col gap-2">
-              <Link to="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Холбоо барих</Link>
+              <Link to="/contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Холбоо барих</Link>
               <Link to="/faq" className="text-sm text-muted-foreground hover:text-foreground transition-colors">FAQ</Link>
-              <Link to="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Буцаалт</Link>
-              <Link to="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Нууцлал</Link>
+              <Link to="/returns" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Буцаалт</Link>
+              <Link to="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Нууцлал</Link>
             </div>
           </div>
 

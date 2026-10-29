@@ -27,6 +27,7 @@ export const fetchProductWithVariants = async (productId: string) => {
     .from('products')
     .select(`
       *,
+      categories(name),
       product_variants (
         id,
         option_name,
