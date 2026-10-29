@@ -15,7 +15,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { createManualOrder, supabase } from "@/lib/supabase";
+import { createManualOrder, fetchOrderByNumber, supabase } from "@/lib/supabase";
 import { Mail, Phone, MapPin, User, ShoppingBag, ChevronLeft, Shield, CheckCircle2 } from "lucide-react";
 import PaymentModal from "@/components/PaymentModal";
 
@@ -143,8 +143,24 @@ const Checkout = () => {
         })),
       });
 
+      // The database recomputes prices and the total from current product data,
+      // so show the amount it actually stored (e.g. a price changed while in the cart).
+      let finalTotal = snapshotTotal;
+      try {
+        const saved = await fetchOrderByNumber(newOrderNumber);
+        if (saved?.total_amount != null) finalTotal = Number(saved.total_amount);
+      } catch {
+        // Fall back to the cart total; the order itself was stored
+      }
+      if (finalTotal !== snapshotTotal) {
+        toast({
+          title: "Үнэ шинэчлэгдсэн",
+          description: `Зарим барааны үнэ өөрчлөгдсөн тул төлөх дүн ${finalTotal.toLocaleString()}₮ боллоо.`,
+        });
+      }
+
       setOrderNumber(newOrderNumber);
-      setPaidAmount(snapshotTotal);
+      setPaidAmount(finalTotal);
       setShowPaymentModal(true);
       clearCart();
     } catch (error: any) {
