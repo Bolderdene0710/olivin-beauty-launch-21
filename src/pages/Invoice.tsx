@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { supabase } from "@/lib/supabase";
+import { fetchOrderByNumber } from "@/lib/supabase";
+import { STORE_CONTACT, STORE_BANK } from "@/lib/storeInfo";
 import { useToast } from "@/hooks/use-toast";
 import { Printer, ArrowLeft } from "lucide-react";
 
@@ -26,13 +27,7 @@ const Invoice = () => {
   const loadOrder = async (orderNumber: string) => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("orders")
-        .select("*")
-        .eq("order_number", orderNumber)
-        .single();
-
-      if (error) throw error;
+      const data = await fetchOrderByNumber(orderNumber);
 
       if (data) {
         setOrder(data);
@@ -130,15 +125,15 @@ const Invoice = () => {
                   </p>
                 </div>
                 <div className="text-right">
-                  <h2 className="text-2xl font-bold mb-2">Pure Glow Skincare</h2>
+                  <h2 className="text-2xl font-bold mb-2">{STORE_BANK.accountName}</h2>
                   <p className="text-sm text-muted-foreground">
                     Ulaanbaatar, Mongolia
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    contact@pureglow.mn
+                    {STORE_CONTACT.email}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    +976 7011-1234
+                    {STORE_CONTACT.phone}
                   </p>
                 </div>
               </div>
@@ -149,9 +144,11 @@ const Invoice = () => {
               <div>
                 <h3 className="font-semibold text-lg mb-3">Bill To:</h3>
                 <p className="font-medium">{order.customer_name}</p>
-                <p className="text-sm text-muted-foreground">
-                  {order.customer_email}
-                </p>
+                {order.customer_email && (
+                  <p className="text-sm text-muted-foreground">
+                    {order.customer_email}
+                  </p>
+                )}
                 <p className="text-sm text-muted-foreground">
                   {order.phone_number}
                 </p>
@@ -161,9 +158,11 @@ const Invoice = () => {
                 <p className="text-sm text-muted-foreground">
                   {order.district} District, Khoroo {order.khoroo}
                 </p>
-                <p className="text-sm text-muted-foreground">
-                  {order.detailed_address}
-                </p>
+                {order.detailed_address && (
+                  <p className="text-sm text-muted-foreground">
+                    {order.detailed_address}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -230,7 +229,7 @@ const Invoice = () => {
                 Thank you for your purchase!
               </p>
               <p className="text-xs text-muted-foreground mt-2">
-                For any questions, please contact us at contact@pureglow.mn
+                For any questions, please contact us at {STORE_CONTACT.email}
               </p>
             </div>
           </Card>

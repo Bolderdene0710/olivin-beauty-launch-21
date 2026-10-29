@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Copy, QrCode, Building2, AlertTriangle, Check, Loader2, Clock, PackageCheck, XCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/lib/supabase";
+import { fetchOrderByNumber } from "@/lib/supabase";
 import { STORE_BANK } from "@/lib/storeInfo";
 
 interface PaymentModalProps {
@@ -17,6 +17,7 @@ type Method = "bank" | "qr";
 type PaymentState = "waiting" | "checking" | "paid" | "cancelled";
 
 // Admin moves an order out of "pending" once the transfer is verified.
+const POLL_MS = 8000;
 const PAID_STATUSES = ["confirmed", "shipped", "delivered"];
 
 const statusToState = (status: string | null | undefined): PaymentState | null => {
@@ -36,42 +37,15 @@ const PaymentModal = ({ open, onOpenChange, orderNumber, totalAmount }: PaymentM
     if (open) setPaymentState("waiting");
   }, [open, orderNumber]);
 
-  // Live update when admin confirms the payment
-  useEffect(() => {
-    if (!open || !orderNumber) return;
-
-    const channel = supabase
-      .channel(`payment-${orderNumber}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "orders",
-          filter: `order_number=eq.${orderNumber}`,
-        },
-        (payload) => {
-          const next = statusToState((payload.new as { status?: string }).status);
-          if (next) setPaymentState(next);
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [open, orderNumber]);
-
   const checkPayment = useCallback(async () => {
     setPaymentState("checking");
-    const { data, error } = await supabase
-      .from("orders")
-      .select("status")
-      .eq("order_number", orderNumber)
-      .maybeSingle();
-
-    const next = statusToState(data?.status);
-    if (error || !next) {
+    let next: PaymentState | null = null;
+    try {
+      next = statusToState((await fetchOrderByNumber(orderNumber))?.status);
+    } catch {
+      next = null;
+    }
+    if (!next) {
       setPaymentState("waiting");
       toast({ title: "Шалгахад алдаа гарлаа", description: "Дахин оролдоно уу.", variant: "destructive" });
       return;
@@ -85,6 +59,21 @@ const PaymentModal = ({ open, onOpenChange, orderNumber, totalAmount }: PaymentM
       });
     }
   }, [orderNumber, toast]);
+
+  // Poll quietly while waiting so the modal flips as soon as admin confirms.
+  // (Guests can't receive realtime events for orders under RLS.)
+  useEffect(() => {
+    if (!open || !orderNumber || paymentState !== "waiting") return;
+    const timer = setInterval(async () => {
+      try {
+        const next = statusToState((await fetchOrderByNumber(orderNumber))?.status);
+        if (next && next !== "waiting") setPaymentState(next);
+      } catch {
+        // Ignore transient errors; the next tick or the manual check will retry.
+      }
+    }, POLL_MS);
+    return () => clearInterval(timer);
+  }, [open, orderNumber, paymentState]);
 
   const copyToClipboard = async (text: string, field: string) => {
     try {

@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { supabase } from "@/lib/supabase";
+import { fetchOrderByNumber } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import {
@@ -35,15 +35,17 @@ interface Order {
   order_number: string;
   status: OrderStatus | string;
   customer_name: string;
-  customer_email: string;
+  customer_email?: string | null;
   phone_number: string;
   district: string;
   khoroo: string | number;
-  detailed_address: string;
+  detailed_address?: string | null;
   total_amount: number;
   items: Array<{ name: string; quantity: number; price: number }>;
   created_at: string;
 }
+
+const POLL_MS = 15000;
 
 const STATUS_FLOW: OrderStatus[] = ["pending", "confirmed", "shipped", "delivered"];
 
@@ -91,7 +93,6 @@ const OrderTracking = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [liveBlink, setLiveBlink] = useState(false);
   const { toast } = useToast();
-  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   useEffect(() => {
     const orderParam = searchParams.get("order");
@@ -102,42 +103,29 @@ const OrderTracking = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
-  // Subscribe to realtime status updates whenever order is loaded
+  // Poll for status changes while the order is still in progress
+  // (guests can't receive realtime events for orders under RLS).
   useEffect(() => {
-    if (!order?.id) return;
+    if (!order?.order_number || ["delivered", "cancelled"].includes(order.status)) return;
 
-    const channel = supabase
-      .channel(`order-${order.id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "orders",
-          filter: `id=eq.${order.id}`,
-        },
-        (payload) => {
-          const next = payload.new as Order;
-          setOrder((prev) =>
-            prev ? { ...prev, ...next } : (next as Order)
-          );
-          setLiveBlink(true);
-          setTimeout(() => setLiveBlink(false), 1500);
-          toast({
-            title: "Захиалгын төлөв шинэчлэгдлээ",
-            description:
-              STATUS_META[next.status as OrderStatus]?.label ?? next.status,
-          });
-        }
-      )
-      .subscribe();
+    const timer = setInterval(async () => {
+      try {
+        const next = await fetchOrderByNumber(order.order_number);
+        if (!next || next.status === order.status) return;
+        setOrder((prev) => (prev ? { ...prev, status: next.status } : prev));
+        setLiveBlink(true);
+        setTimeout(() => setLiveBlink(false), 1500);
+        toast({
+          title: "Захиалгын төлөв шинэчлэгдлээ",
+          description: STATUS_META[next.status as OrderStatus]?.label ?? next.status,
+        });
+      } catch {
+        // Ignore transient errors; the next tick retries.
+      }
+    }, POLL_MS);
 
-    channelRef.current = channel;
-    return () => {
-      supabase.removeChannel(channel);
-      channelRef.current = null;
-    };
-  }, [order?.id, toast]);
+    return () => clearInterval(timer);
+  }, [order?.order_number, order?.status, toast]);
 
   const handleTrackOrder = async (orderNum?: string) => {
     const numToTrack = orderNum || orderNumber;
@@ -151,13 +139,7 @@ const OrderTracking = () => {
 
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("orders")
-        .select("*")
-        .eq("order_number", numToTrack.trim())
-        .maybeSingle();
-
-      if (error) throw error;
+      const data = await fetchOrderByNumber(numToTrack);
 
       if (data) {
         setOrder(data as Order);
@@ -413,10 +395,12 @@ const OrderTracking = () => {
                       <User className="h-3.5 w-3.5 text-muted-foreground" />
                       {order.customer_name}
                     </div>
-                    <div className="flex items-center gap-2 text-foreground/80">
-                      <Mail className="h-3.5 w-3.5 text-muted-foreground" />
-                      {order.customer_email}
-                    </div>
+                    {order.customer_email && (
+                      <div className="flex items-center gap-2 text-foreground/80">
+                        <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                        {order.customer_email}
+                      </div>
+                    )}
                     <div className="flex items-center gap-2 text-foreground/80">
                       <Phone className="h-3.5 w-3.5 text-muted-foreground" />
                       {order.phone_number}
@@ -438,9 +422,15 @@ const OrderTracking = () => {
                   <p className="text-sm text-foreground/80">
                     {order.district} дүүрэг, {order.khoroo}-р хороо
                   </p>
-                  <p className="text-sm text-foreground/70 mt-1.5">
-                    {order.detailed_address}
-                  </p>
+                  {order.detailed_address ? (
+                    <p className="text-sm text-foreground/70 mt-1.5">
+                      {order.detailed_address}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground mt-3">
+                      Хувийн мэдээллийг нууцалсан. Бүрэн мэдээллийг харахын тулд захиалга хийсэн имэйлээрээ нэвтэрнэ үү.
+                    </p>
+                  )}
                 </div>
               </div>
 

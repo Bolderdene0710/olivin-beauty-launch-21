@@ -48,15 +48,47 @@ export const fetchProductWithVariants = async (productId: string) => {
 /*
  * ЗАХИАЛГА ХАДГАЛАХ ФУНКЦ
  */
+// No .select() after insert: guests have no SELECT access to orders (see secure_orders migration).
 export const createManualOrder = async (orderData: Record<string, unknown>) => {
-  const { data, error } = await supabase
-    .from('orders')
-    .insert([orderData])
-    .select();
+  const { error } = await supabase.from('orders').insert([orderData]);
 
   if (error) {
     console.error("Захиалга хадгалахад алдаа гарлаа:", error);
     throw error;
   }
-  return data;
+};
+
+/*
+ * ЗАХИАЛГА ДУГААРААР ХАЙХ ФУНКЦ
+ * Owner/admin get the full row through RLS; everyone else gets the masked
+ * row from get_order_by_number() (no email or street address).
+ */
+export interface OrderLookup {
+  id: string;
+  order_number: string;
+  status: string;
+  total_amount: number;
+  items: Array<{ id?: string; name: string; quantity: number; price: number }>;
+  created_at: string;
+  district: string | null;
+  khoroo: string | number | null;
+  customer_name: string;
+  phone_number: string;
+  customer_email?: string | null;
+  detailed_address?: string | null;
+}
+
+export const fetchOrderByNumber = async (orderNumber: string): Promise<OrderLookup | null> => {
+  const trimmed = orderNumber.trim();
+
+  const { data: full } = await supabase
+    .from('orders')
+    .select('*')
+    .eq('order_number', trimmed)
+    .maybeSingle();
+  if (full) return full as OrderLookup;
+
+  const { data, error } = await supabase.rpc('get_order_by_number', { p_order_number: trimmed });
+  if (error) throw error;
+  return ((data as OrderLookup[] | null)?.[0] as OrderLookup | undefined) ?? null;
 };

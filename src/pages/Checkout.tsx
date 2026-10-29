@@ -118,7 +118,11 @@ const Checkout = () => {
 
     setIsProcessing(true);
     try {
-      const newOrderNumber = `ORD${Date.now()}${Math.floor(Math.random() * 1000)}`;
+      // Order number doubles as the guest lookup key, so make it hard to guess.
+      const randomPart = Array.from(crypto.getRandomValues(new Uint8Array(4)), (b) => b.toString(16).padStart(2, "0"))
+        .join("")
+        .toUpperCase();
+      const newOrderNumber = `ORD${Date.now().toString(36).toUpperCase()}${randomPart}`;
       const snapshotTotal = cartTotal;
 
       await createManualOrder({
